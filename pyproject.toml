@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "financial pattern recognition"
+version = "0.1.0"
+description = "SOTA Financial Pattern Recognition Algorithms"
+authors = ["Pratham <agarwalpratham2001@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+requests = "^2.32.3"
+pandas = "^2.2.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
