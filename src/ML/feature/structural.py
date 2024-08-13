@@ -1,0 +1,1 @@
+# The structural features: these types of features are here to understand the long-term market movement: market regime, structural breaks,
