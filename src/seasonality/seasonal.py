@@ -183,7 +183,10 @@ def SeasonalStrategy():
         """Generates the trading signal based on the seasonal analysis"""
         analysis_df = self.analyzer.variance_analysis(self.data,period = period,plot=False)
 
+        coeffs = analysis_df['Coefficient']
 
+        # long signals - find range from local minima to local maxima
+        
         
 
 if __name__ == '__main__':
