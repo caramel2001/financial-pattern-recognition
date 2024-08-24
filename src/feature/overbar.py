@@ -10,8 +10,26 @@ class OverbarFeature:
     
     def technical_indicators(self):
         pass
-
-
+    
+    def stats_features(self):
+        """
+        - velocity
+        - acceleration
+        - candle_way
+        - filling
+        - spread
+        - volume
+        - volatility
+        - rolling_volatility Yang-Zhang
+        - rolling_volatility Garman-Klass
+        - kama_trend
+        - rolling_adf_stat
+        - ret_log_{window}
+        - autocorr_{window}
+        - amplitude
+        - kama_diff
+        """
+        pass
 
 class Alpha158:
     def __init__(self, data: pd.DataFrame, basic: bool = False, windows : list = [5, 10, 20, 30, 60]):

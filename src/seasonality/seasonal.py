@@ -48,6 +48,9 @@ class Seasonal:
         if period=='M':
             data['period'] = data.index.month
             reference = 12
+        elif period=="H":
+            data['period'] = data.index.hour
+            reference = 7
         elif period=='W':
             data['period'] = data.index.isocalendar().week
             reference = 52
@@ -59,6 +62,19 @@ class Seasonal:
         data['period'] = data['period'].astype('category')
         return data,reference
 
+    def intraday_variance_analysis(self,log=True,period:str='H',significance=0.05,plot=True):
+        """Perform ANNOVA Analysis on the price series in order to quantify the effect of the period on the price series"""
+
+        data = self.data.copy()
+        data = np.log(data) if log else data
+
+        data,reference = self.create_freq_column(data,period)
+        print(data.head())
+        test_results = self.annova_analysis(data,reference,significance)
+        if plot:
+            self.plot_annova_results(test_results)
+
+        return test_results
 
     def variance_analysis(self,log=True,period:str='M',significance=0.05,plot=True):
         """Perform ANNOVA Analysis on the price series in order to quantify the effect of the period on the price series"""
@@ -66,10 +82,17 @@ class Seasonal:
         data = self.data.copy()
         data = np.log(data) if log else data
 
-        test_results = pd.DataFrame()
         data,reference = self.create_freq_column(data,period)
+
+        test_results = self.annova_analysis(data,reference,significance)
+        if plot:
+            self.plot_annova_results(test_results)
+
+        return test_results
+    
+    def annova_analysis(self,data,reference,significance=0.05):
         model = ols(f'Close ~ C(period, Treatment(reference={reference}))', data=data).fit() 
-         # We use the last period as the reference period so that means the intercept represents last period  and all other periods are compared to last period
+        # We use the last period as the reference period so that means the intercept represents last period  and all other periods are compared to last period
         anova_table = anova_lm(model)
         print(anova_table)
 
@@ -87,14 +110,12 @@ class Seasonal:
         std_error = pd.DataFrame(model.bse.round(3), columns=['Std. Error'])
         coeff = pd.DataFrame(model.params.round(3), columns=['Coefficient'])
         t_p_values = pd.concat([coeff,t_values, p_values,std_error], axis=1)
-
+        test_results = pd.DataFrame()
         test_results = pd.concat([test_results, t_p_values], axis=1)
-
-        if plot:
-            self.plot_annova_results(test_results)
 
         return test_results
     
+
     def non_parametric_test(self,log=True,period:str='M',significance=0.05,plot=True):
         """Performs non-parametric test(Kruskal-Wallis) to check if the periods have a significant effect on the price series"""
         data = self.data.copy()
@@ -186,7 +207,8 @@ def SeasonalStrategy():
         coeffs = analysis_df['Coefficient']
 
         # long signals - find range from local minima to local maxima
-        
+    
+    
         
 
 if __name__ == '__main__':

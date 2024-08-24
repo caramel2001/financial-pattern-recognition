@@ -1,0 +1,1 @@
+# Based on given portfolio weights, the diversifier calculates the diversification ratio of the portfolio. As well as suggest subset of the protoflio resulting in maximum diversification. It also has recommendations for the Portfolio to consider for better diversification.

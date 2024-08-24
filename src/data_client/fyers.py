@@ -5,6 +5,8 @@ import requests
 import pandas as pd
 from datetime import datetime,timedelta
 import calendar
+import hashlib 
+
 
 LOGS_DIR = "logs"
 
@@ -21,7 +23,8 @@ class FyersBase:
             client_id=self.client_id,
             secret_key=self.secret_key,
             redirect_uri=self.redirect_uri,
-            response_type=self.response_type
+            response_type=self.response_type,
+            state=self.state
         )
         # self.get_equity_list()
         # self.get_FO_list()
@@ -39,13 +42,17 @@ class FyersBase:
             headers = {
                 "Content-Type":"application/json"
             }
+            #print(self.client_id,self.secret_key)
             data_raw = {
                 "grant_type": "refresh_token",
-                "appIdHash": self.client_id,
+                # SHA-256 of api_id:app_secret. 
+                "appIdHash": hashlib.sha256(f"{self.client_id}:{self.secret_key}".encode()).hexdigest(),
                 "refresh_token": self.refresh_token,
-                "pin": settings["FYERS_PIN"]
+                "pin": settings["FYERS_PIN"],
             }
+            #print(data_raw)
             response = requests.post(url,headers=headers,json=data_raw)
+            #print(response.content)
             response = response.json()
             try:
                 if response['code'] != 200:
@@ -64,7 +71,7 @@ class FyersBase:
             self.refresh_token = response["refresh_token"]
         except KeyError:
             raise ValueError("Unable to get access token",response)
-        print(response)
+        #print(response)
         return self.access_token
     
     def store_token(self):
@@ -152,7 +159,7 @@ class FyersData(FyersBase):
         
         start = calendar.timegm(start.timetuple())
         end = calendar.timegm(end.timetuple())
-        print(start,end)
+       # print(start,end)
         data = {
             "symbol":symbol,
             "resolution":interval,
@@ -160,7 +167,7 @@ class FyersData(FyersBase):
             # epoch value
             "range_from": start,
             "range_to": end,
-            # "cont_flag":"1",
+            "cont_flag":"1",
         }
         return self.fyers.history(data)
 
@@ -192,9 +199,9 @@ class FyersData(FyersBase):
     
 if __name__ == "__main__":
    
-    # fyers = FyersBase()
+    fyers = FyersBase()
     
-    ## generate auth code
+    # generate auth code
     # url = fyers.get_auth_url()
     # webbrowser.open(url,new=1)
     
@@ -204,9 +211,11 @@ if __name__ == "__main__":
 
     # get historical data
     fyers = FyersData()
-    data = fyers.get_historical_data("SBIN-EQ","NSE",interval="1D")
+    data = fyers.get_historical_data("SBIN-EQ","NSE",interval="1")
     
-    print(data)
+    print(len(data['candles']))
+    print(data['candles'][0])
+    print(data['candles'][-1])
     
     
 

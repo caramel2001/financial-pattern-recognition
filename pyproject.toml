@@ -27,6 +27,7 @@ boto3 = "1.35.2"
 aws-xray-sdk = "2.14.0"
 aws-lambda-powertools = "1.25.5"
 fyers-apiv3 = "^3.1.2"
+seaborn = "^0.13.2"
 
 
 [build-system]

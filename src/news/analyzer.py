@@ -12,8 +12,17 @@ class NewsAnalyzer:
     def get_company_details():
         "Get the details of the company from the news"
         pass
-    
 
+class ChartAnalyzer:
+    def __init__(self):
+        pass
+    
+    def analyze(self, chart: str) -> float:
+        pass
+    
+    def get_trend():
+        "Get the trend of the chart"
+        pass
 
 class RiskAnalyzer:
     def __init__(self):
