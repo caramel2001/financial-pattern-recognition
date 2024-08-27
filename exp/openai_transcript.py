@@ -25,7 +25,11 @@ def main():
     Financial Performance: Analyze mentions of revenue, profit margins, earnings per share, and other financial metrics. Surpassing expectations is positive; missing them is negative.
     Guidance and Future Outlook: Focus on the company's guidance and future outlook. Positive guidance should increase the sentiment score, while negative or uncertain guidance should decrease it.
     Market and Industry Context: Consider any discussion of market conditions or industry trends that might affect the company's performance.
-    For each earnings call, provide:"""
+    
+    For each earnings call, provide:
+    Sentiment Score (-1 to 1): A numerical score reflecting the overall sentiment.
+    Explanation: A detailed explanation covering the key factors that influenced the sentiment score.
+    """
 
     # print(str(transcript["body"]))
     sentiment_response = client.beta.chat.completions.parse(
