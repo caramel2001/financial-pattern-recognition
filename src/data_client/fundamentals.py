@@ -1,17 +1,22 @@
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
+import finnhub
+from src.utils.config import settings
+# import StringIO
+from io import StringIO
 
-class ScreenerIn:
+class ScreenerIn:  # for Indian stocks
     def __init__(self,ticker:str):
         self.url = f'https://www.screener.in/company/{ticker}'
         self.headers = {
-            'User-Agent': 'Mozilla/5.0'
+            'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Mobile Safari/537.36'
         }
         self.soup = self.get_page()
+        self.warehouse_id = self.soup.find("div", {"id": "company-info"}).attrs['data-warehouse-id']
     
     def get_page(self):
-        response = requests.get(self.url+"/consolidated/", headers=self.headers)
+        response = requests.get(self.url, headers=self.headers)
         if response.status_code != 200:
             raise Exception(f"Failed to load page: {response.status_code}")
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -46,38 +51,60 @@ class ScreenerIn:
         return df_ratios
 
     def get_quaterly_results(self):
-        html = self.soup.find('table', {'id': 'quarters'})
+        html = self.soup.find('section', {'id': 'quarters'})
         table = html.find('table')
-        return pd.read_html(str(table))[0].set_index('Unnamed: 0').transpose()
+        return pd.read_html(StringIO(str(table)))[0].set_index('Unnamed: 0').transpose()
     
     def get_peers(self):
-        html = self.soup.find('table', {'id': 'peers'})
-        table = html.find('table')
-        return pd.read_html(str(table))[0].set_index('Unnamed: 0').transpose()
+        page = requests.get(f'https://www.screener.in/api/company/{self.warehouse_id}/peers/')
+        soup = BeautifulSoup(page.text, 'html.parser')
+        table = soup.find('table')
+        return pd.read_html(StringIO(str(table)))
     
     def get_profit_loss(self):
-        html = self.soup.find('table', {'id': 'profit-loss'})
+        html = self.soup.find('section', {'id': 'profit-loss'})
         table = html.find('table')
-        return pd.read_html(str(table))[0].set_index('Unnamed: 0').transpose()
+        return pd.read_html(StringIO(str(table)))[0].set_index('Unnamed: 0').transpose()
     
     def get_balance_sheet(self):
-        html = self.soup.find('table', {'id': 'balance-sheet'})
+        html = self.soup.find('section', {'id': 'balance-sheet'})
         table = html.find('table')
-        return pd.read_html(str(table))[0].set_index('Unnamed: 0').transpose()  
+        return pd.read_html(StringIO(str(table)))[0].set_index('Unnamed: 0').transpose()
     
     def get_cash_flow(self):
-        html = self.soup.find('table', {'id': 'cash-flow'})
+        html = self.soup.find('section', {'id': 'cash-flow'})
         table = html.find('table')
-        return pd.read_html(str(table))[0].set_index('Unnamed: 0').transpose()
+        return pd.read_html(StringIO(str(table)))[0].set_index('Unnamed: 0').transpose()
     
     def get_ratios(self):
-        html = self.soup.find('table', {'id': 'ratios'})
+        html = self.soup.find('section', {'id': 'ratios'})
         table = html.find('table')
-        return pd.read_html(str(table))[0].set_index('Unnamed: 0').transpose()
+        return pd.read_html(StringIO(str(table)))[0].set_index('Unnamed: 0').transpose()
     
     def get_shareholders(self):
-        html = self.soup.find('table', {'id': 'shareholding'})
+        html = self.soup.find('section', {'id': 'shareholding'})
         table = html.find('table')
-        return pd.read_html(str(table))[0].set_index('Unnamed: 0').transpose()
+        return pd.read_html(StringIO(str(table)))[0].set_index('Unnamed: 0').transpose()
 
+
+# https://www.kaggle.com/datasets/finnhub/reported-financials by FinnHubb
+class FundamentalsUS: # for US stocks (Alpha Vantage)
+    def __init__(self,ticker:str):
+        print(settings['FINNHUB_API_KEY'])
+        self.client  = finnhub.Client(api_key=settings['FINNHUB_API_KEY'])
+        self.ticker = ticker    
+
+    def get_peers(self):
+        return self.client.company_peers(self.ticker)
     
+    def search(self,query:str):
+        return self.client.symbol_lookup(query)
+    
+
+if __name__ == "__main__":
+    ticker = "MARUTI"
+    screener = ScreenerIn(ticker)
+    print(screener.get_data())
+    # ticker = "MARUTI.NS"
+    # fundamentals = FundamentalsUS(ticker)
+    # print(fundamentals.get_peers())

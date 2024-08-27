@@ -21,4 +21,6 @@ settings = {
     "FYERS_REDIRECT_URI": getenv("FYERS_REDIRECT_URI"),
     "FYERS_AUTH_CODE": getenv("FYERS_AUTH_CODE"),
     "FYERS_PIN": getenv("FYERS_PIN"),
+    "FINNHUB_API_KEY": getenv("FINNHUB_API_KEY"),
+    "OPENAI_API_KEY": getenv("OPENAI_API_KEY"),
 }

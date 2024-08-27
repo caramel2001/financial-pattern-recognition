@@ -1,5 +1,10 @@
 # Financial Market Pattern Recognition
 
+## Example
+```
+poetry run python -m  src.data_client.earnings_transcript # extract earning transcripts from Motley Fool for Analysis
+```
+
 ## Reading
 
 - 

@@ -10,5 +10,5 @@ class SEC:
     def get_insider_trades(self):
         """Get the insider trades"""
         pass
-
+    
     

@@ -28,6 +28,9 @@ aws-xray-sdk = "2.14.0"
 aws-lambda-powertools = "1.25.5"
 fyers-apiv3 = "^3.1.2"
 seaborn = "^0.13.2"
+finnhub-python = "^2.4.20"
+pydantic = "^2.8.2"
+openai = "^1.42.0"
 
 
 [build-system]
