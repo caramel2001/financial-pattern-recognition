@@ -1,5 +1,11 @@
 # Financial Market Pattern Recognition
 
+## Setup
+Ensure you have poetry installed [Poetry Docs](https://python-poetry.org/docs/).
+```
+poetry install # install the environment
+```
+
 ## Example
 ```
 poetry run python -m  exp.get_transcript # extract earning transcripts from Motley Fool and CapIQ for Analysis
