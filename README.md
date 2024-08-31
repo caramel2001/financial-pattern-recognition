@@ -11,6 +11,8 @@ poetry install # install the environment
 poetry run python -m  exp.get_transcript # extract earning transcripts from Motley Fool and CapIQ for Analysis
 
 poetry run python -m exp.openai_transcript # extract analysis using OpenAI API and pydantic to ensure structured output. Sentiment and Explanation. Need to optimize the prompt based on some hsitorical data and metrics.
+
+poetry run python -m exp.screener  # get screened stocks from SeekingAlpha
 ```
 
 ## Reading

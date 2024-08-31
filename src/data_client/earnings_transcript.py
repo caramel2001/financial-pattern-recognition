@@ -168,7 +168,91 @@ class SeekingAlpha(EarningsTranscriptScraper):
         df['ticker'] = df['relationships.primaryTickers.data'].apply(lambda x: tickers.loc[x[0]['id']]['attributes.name'])
         return df
 
-    def get_transcripts(self,since:datetime = date.today() - timedelta(days=1),until = date.today()):
+    def get_json_data(self,soup):
+        script = soup.find_all('script')[4]
+        text = script.text.split("window.SSR_DATA = ")[1]
+        # remove all text from "content" to "innerMarketing"
+        text_2 = text.split('"content"')[1]
+        # remove all text after the last "}"
+        text_2 = text_2[:-1].split("innerMarketing")[1]
+
+        json_data = json.loads(text.split('"content"')[0] + '"innerMarketing' + text_2)
+        return json_data
+    
+    def parse_transcript(self,soup):
+        script = soup.find_all('script')[4]
+        text = script.text.split("window.SSR_DATA = ")[1]
+        text_2 = text.split('"content":')[1]
+        text_2 = text_2[:-1].split("innerMarketing")[0]
+        soup = BeautifulSoup(text_2.encode().decode('unicode_escape'), 'html.parser')
+        transcript = []
+        statement_num = 1
+        # Define a helper function to handle participants
+        def extract_participants(p):
+            p = p.find_next_sibling("p")
+            participants_dict = {}
+            text_content = p.get_text(separator="\n")
+            lines = text_content.split('\n')
+            for line in lines:
+                if " - " in line:
+                    name, position = line.split(" - ", 1)
+                    participants_dict[name.strip()] = position.strip()
+            return participants_dict
+        text = ""
+        skip_next = False
+        current_speaker = None
+        first_speaker = True
+        for p in soup.find_all("p")[1:]:
+            if skip_next:
+                skip_next = False
+                continue
+            # Extract Company Participants
+            if "Company Participants" in p.text:
+                company_participants = extract_participants(p)
+                skip_next = True
+                continue
+            # Extract Conference Call Participants
+            if "Conference Call Participants" in p.text:
+                conference_call_participants = extract_participants(p)
+                skip_next = True
+                continue
+            # Extract main transcript body
+            speaker_tag = p.find("strong")
+            if (speaker_tag) :
+                if not first_speaker:
+                    transcript.append({
+                        "statement_num": statement_num,
+                        "speaker": current_speaker,
+                        "role": role,
+                        "affiliation": affiliation,
+                        "text": text
+                    })
+                    statement_num += 1
+                    text = ""
+                current_speaker = speaker_tag.text.strip()
+                role = company_participants.get(current_speaker, None) 
+                affiliation = conference_call_participants.get(current_speaker, None)
+            else:
+                text += p.text + "\n"
+                first_speaker = False
+            transcript.append({
+                        "statement_num": statement_num,
+                        "speaker": current_speaker,
+                        "role": role,
+                        "affiliation": affiliation,
+                        "text": text
+                    })
+        return transcript
+
+    def get_transcript_body(self,url:str):
+        response = requests.get(url,headers=self.headers)
+        soup = BeautifulSoup(response.content, 'html.parser')
+        json_data = self.get_json_data(soup)
+        transcript = self.parse_transcript(soup)
+        return transcript,json_data
+
+
+    def get_transcripts(self,since:datetime = datetime.today() - timedelta(days=2),until = datetime.today()):
         logger.debug(f"Extracting Transcripts since {since}")
         params = {
             "filter[category]": "earnings::earnings-call-transcripts",
@@ -179,7 +263,9 @@ class SeekingAlpha(EarningsTranscriptScraper):
             "page[size]": "50",
             "page[number]": "1"
         }
+        logger.debug(params)
         response = requests.get(self.articles_url,headers=self.headers,params=params)
+        print(response.json())
         pages = response.json()['meta']['page']['totalPages']
         df = self.process_response(response)
         for page in tqdm(range(1, pages+1)):
@@ -187,7 +273,22 @@ class SeekingAlpha(EarningsTranscriptScraper):
             response = requests.get(self.articles_url, params=params, headers=self.headers)
             temp = self.process_response(response)
             df = pd.concat([df, temp], ignore_index=True)
-        return df
+
+        logger.debug(f"Extracting {len(df)} transcripts body")
+        transcripts = []
+        for url in tqdm(df['links.self']):
+            transcript,json_data = self.get_transcript_body(url)
+            transcripts.append(transcript)
+        # get exchange
+        exchanges=[]
+        for ticker in tqdm(df['ticker']):
+            for include in json_data['article']['response']['included']:
+                if include.get('name',"") == ticker:
+                    exchanges.append(include['exchange'])
+                    break
+        df['exchange'] = exchanges
+        df['transcripts'] = transcripts
+        return df.to_dict(orient='records')
 
 class CapIQEarningsTranscript(EarningsTranscriptScraper):
     def __init__(self,cookie_str):
@@ -335,13 +436,17 @@ if __name__ == "__main__":
     #     json.dump(transcripts,f)
 
     # get Capiq
-    cookie_str = """BIGipServercapitaliq-ssl=!T9TIhG5cvHbGAJw12585szMCRwMLn5ljdMQfIiya1kI1RIztsmfiwK0L5LZxdDIt2cYytzYEdq3RXv8=; machineIdCookie=783713664; X-User-CountryCode=IN; BIGipServerQTS-PRD-WEB-IDM-8080-PL=1872391319.36895.0000; _ga=GA1.2.1756279722.1723549018; _bl_uid=FglItz3Cs4scqvp2FstesLU0daXO; uoid=1199570856; __utmc=21616681; liveagent_oref=https://www.capitaliq.com/CIQDotNet/my/dashboard.aspx; liveagent_sid=e2044f8e-cc0e-42d1-925c-19d69ac760b1; liveagent_vc=2; liveagent_ptid=e2044f8e-cc0e-42d1-925c-19d69ac760b1; OptanonAlertBoxClosed=2024-08-13T12:16:07.661Z; BIGipServerQTS-PROD-APP-RB-8080-PL=3475225610.36895.0000; CIQState==; fileDownloaded=true; __utmz=21616681.1724913358.10.5.utmccn=(referral)|utmcsr=loginfs.ntu.edu.sg|utmcct=/|utmcmd=referral; _gid=GA1.2.1628993856.1725083429; _ga_D3TQ6N52TE=GS1.2.1725083429.13.0.1725083429.60.0.0; ASP.NET_SessionId=1hq0j2h2yf0uzfzgdfadb14y; SP_SSO_OKTA_RT_COOKIE=el9Zuu8OI70Dhm17uLk9K9GMV06qEUwrW11yQRdVL0k; SP_SSO_OKTA_SESS_EXPIRE=20240831235032; SP_SSO_OKTA_EXPIRE=20240831064532; SP_SSO_OKTA_COOKIE=eyJraWQiOiJPLVlDdlpGSzlIekd3N3o5QjR5YTc2M3ViS1RjeU9mMW52clRRa0w4V0I0IiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULmlvaTFmODM5Q1lQeDdLUHRGWDhzRmpneG5Fc2w5SjZ6V2xVOUh4VVluM0kub2Fycng1Ymc3MlVwbWppb3cxZDYiLCJpc3MiOiJodHRwczovL3NlY3VyZS5zaWduaW4uc3BnbG9iYWwuY29tL29hdXRoMi9zcGdsb2JhbCIsImF1ZCI6ImFwaTovL3NwZ2xvYmFsIiwiaWF0IjoxNzI1MDgzNDMyLCJleHAiOjE3MjUwODcwMzIsImNpZCI6IjBvYTFvMnc1bTV4ckFaVEtnMWQ4IiwidWlkIjoiMDB1MW51bmZkMGF4OW93N1ExZDgiLCJzY3AiOlsiY2lxIiwib3BlbmlkIiwib2ZmbGluZV9hY2Nlc3MiLCJwcm9maWxlIl0sImF1dGhfdGltZSI6MTcyNDkxMzM0Mywic3ViIjoiUFJBVEhBTTAwMUBFLk5UVS5FRFUuU0ciLCJsYXN0TmFtZSI6IlBSQVRIQU0iLCJjb3VudHJ5IjoiTk9UX0ZPVU5EIiwiZmlyc3ROYW1lIjoiQUdBUldBTEEiLCJFbWFpbCI6IlBSQVRIQU0wMDFARS5OVFUuRURVLlNHIiwiU1BfU1NPX0FQUFMiOlsiU0MiLCJDUyIsIk1LVFBMIiwiQ0lRIiwiTUkiXSwiY29tcGFueSI6W10sIkZlZDIiOltdLCJGZWQxIjpbIjExOTk1NzA4NTZAY2lxIiwiNzE3MzQ5MTM4QGxlZ2FjeWNpcSJdLCJUZW1wbGF0ZUlkIjoiTlRVU0FNTEBudHUuZWR1LnNnIn0.UzM28l6hxR0-IFqFHc0x8PUu_KM1ujoMciFQ4eMW8wZCJ64OJNaMNq51cUpT4tfhPJUMqfMcX6N8yHvRBmLvGQuk0DYcxWjiA2xJVWGA3d9DGmtJ0muEPSxZ4kMjciD_lpQpwxf2qfhlDR-NTzBFJ1Yb2q9rf5HAtHpCdOPh2YfOznbv7-1j7_ahFVutrHXfBQD6dcrfejcQLmsQRiUm5ybT-WsYYnp_Per-yb-BfGPgelvgSufJE6oX7PkWsdedZaQN49STG1TpTEqMYUbVisYFou3oHbWR4DImwTpuvjukd6sJ0mX9ep7pD_d6Qog8zHymlGuQhKYTkz9hmhIDoA; SP_SSO_JWT_COOKIE=el9Zuu8OI70Dhm17uLk9K9GMV06qEUwrW11yQRdVL0k; SP_SSO_SESS_EXPIRE=20240831235032; SP_SSO_AT_COOKIE=eyJraWQiOiJPLVlDdlpGSzlIekd3N3o5QjR5YTc2M3ViS1RjeU9mMW52clRRa0w4V0I0IiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULmlvaTFmODM5Q1lQeDdLUHRGWDhzRmpneG5Fc2w5SjZ6V2xVOUh4VVluM0kub2Fycng1Ymc3MlVwbWppb3cxZDYiLCJpc3MiOiJodHRwczovL3NlY3VyZS5zaWduaW4uc3BnbG9iYWwuY29tL29hdXRoMi9zcGdsb2JhbCIsImF1ZCI6ImFwaTovL3NwZ2xvYmFsIiwiaWF0IjoxNzI1MDgzNDMyLCJleHAiOjE3MjUwODcwMzIsImNpZCI6IjBvYTFvMnc1bTV4ckFaVEtnMWQ4IiwidWlkIjoiMDB1MW51bmZkMGF4OW93N1ExZDgiLCJzY3AiOlsiY2lxIiwib3BlbmlkIiwib2ZmbGluZV9hY2Nlc3MiLCJwcm9maWxlIl0sImF1dGhfdGltZSI6MTcyNDkxMzM0Mywic3ViIjoiUFJBVEhBTTAwMUBFLk5UVS5FRFUuU0ciLCJsYXN0TmFtZSI6IlBSQVRIQU0iLCJjb3VudHJ5IjoiTk9UX0ZPVU5EIiwiZmlyc3ROYW1lIjoiQUdBUldBTEEiLCJFbWFpbCI6IlBSQVRIQU0wMDFARS5OVFUuRURVLlNHIiwiU1BfU1NPX0FQUFMiOlsiU0MiLCJDUyIsIk1LVFBMIiwiQ0lRIiwiTUkiXSwiY29tcGFueSI6W10sIkZlZDIiOltdLCJGZWQxIjpbIjExOTk1NzA4NTZAY2lxIiwiNzE3MzQ5MTM4QGxlZ2FjeWNpcSJdLCJUZW1wbGF0ZUlkIjoiTlRVU0FNTEBudHUuZWR1LnNnIn0.UzM28l6hxR0-IFqFHc0x8PUu_KM1ujoMciFQ4eMW8wZCJ64OJNaMNq51cUpT4tfhPJUMqfMcX6N8yHvRBmLvGQuk0DYcxWjiA2xJVWGA3d9DGmtJ0muEPSxZ4kMjciD_lpQpwxf2qfhlDR-NTzBFJ1Yb2q9rf5HAtHpCdOPh2YfOznbv7-1j7_ahFVutrHXfBQD6dcrfejcQLmsQRiUm5ybT-WsYYnp_Per-yb-BfGPgelvgSufJE6oX7PkWsdedZaQN49STG1TpTEqMYUbVisYFou3oHbWR4DImwTpuvjukd6sJ0mX9ep7pD_d6Qog8zHymlGuQhKYTkz9hmhIDoA; SP_SSO_AT_COOKIE_EXPIRE=20240831064532; loginSearchCookie=fsbpDITlMl3HsuPShqgZo9EY7kPtG8ZCxGnVtdU9cQ/5ZCF2Te4FjXMSchR+KUBK; CIQ_ARQ_List=|; ASP.NET_SessionId=1hq0j2h2yf0uzfzgdfadb14y; __utma=21616681.59662645.1723549356.1724921949.1725083444.12; __utmb=21616681; _hp2_ses_props.544738949=%7B%22r%22%3A%22https%3A%2F%2Fwww.capitaliq.com%2Fciqdotnet%2FLogin-okta.aspx%22%2C%22ts%22%3A1725083444550%2C%22d%22%3A%22www.capitaliq.com%22%2C%22h%22%3A%22%2FCIQDotNet%2Fmy%2Fdashboard.aspx%22%7D; userLoggedIn=1hq0j2h2yf0uzfzgdfadb14y|8/31/2024 1:53:10 AM|717349138; OptanonConsent=isGpcEnabled=0&datestamp=Sat+Aug+31+2024+11%3A23%3A21+GMT%2B0530+(India+Standard+Time)&version=202310.1.0&browserGpcFlag=0&isIABGlobal=false&hosts=&consentId=0a1ffdca-c6e1-47d6-9c35-bb4c45014f32&interactionCount=2&landingPath=NotLandingPage&groups=C0003%3A1%2CC0002%3A1%2CC0001%3A1&AwaitingReconsent=false&geolocation=IN%3BAS; _hp2_id.544738949=%7B%22userId%22%3A%227241258315538576%22%2C%22pageviewId%22%3A%223626678047026804%22%2C%22sessionId%22%3A%222952513201168708%22%2C%22identity%22%3A%22717349138%22%2C%22trackerVersion%22%3A%224.0%22%2C%22identityField%22%3Anull%2C%22isIdentified%22%3A1%7D; _dd_s=rum=1&id=0b9d424c-3664-4121-acc5-849b9cbb3a3c&created=1725083436983&expire=1725084517700"""
+    # cookie_str = """BIGipServercapitaliq-ssl=!T9TIhG5cvHbGAJw12585szMCRwMLn5ljdMQfIiya1kI1RIztsmfiwK0L5LZxdDIt2cYytzYEdq3RXv8=; machineIdCookie=783713664; X-User-CountryCode=IN; BIGipServerQTS-PRD-WEB-IDM-8080-PL=1872391319.36895.0000; _ga=GA1.2.1756279722.1723549018; _bl_uid=FglItz3Cs4scqvp2FstesLU0daXO; uoid=1199570856; __utmc=21616681; liveagent_oref=https://www.capitaliq.com/CIQDotNet/my/dashboard.aspx; liveagent_sid=e2044f8e-cc0e-42d1-925c-19d69ac760b1; liveagent_vc=2; liveagent_ptid=e2044f8e-cc0e-42d1-925c-19d69ac760b1; OptanonAlertBoxClosed=2024-08-13T12:16:07.661Z; BIGipServerQTS-PROD-APP-RB-8080-PL=3475225610.36895.0000; CIQState==; fileDownloaded=true; __utmz=21616681.1724913358.10.5.utmccn=(referral)|utmcsr=loginfs.ntu.edu.sg|utmcct=/|utmcmd=referral; _gid=GA1.2.1628993856.1725083429; _ga_D3TQ6N52TE=GS1.2.1725083429.13.0.1725083429.60.0.0; ASP.NET_SessionId=1hq0j2h2yf0uzfzgdfadb14y; SP_SSO_OKTA_RT_COOKIE=el9Zuu8OI70Dhm17uLk9K9GMV06qEUwrW11yQRdVL0k; SP_SSO_OKTA_SESS_EXPIRE=20240831235032; SP_SSO_OKTA_EXPIRE=20240831064532; SP_SSO_OKTA_COOKIE=eyJraWQiOiJPLVlDdlpGSzlIekd3N3o5QjR5YTc2M3ViS1RjeU9mMW52clRRa0w4V0I0IiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULmlvaTFmODM5Q1lQeDdLUHRGWDhzRmpneG5Fc2w5SjZ6V2xVOUh4VVluM0kub2Fycng1Ymc3MlVwbWppb3cxZDYiLCJpc3MiOiJodHRwczovL3NlY3VyZS5zaWduaW4uc3BnbG9iYWwuY29tL29hdXRoMi9zcGdsb2JhbCIsImF1ZCI6ImFwaTovL3NwZ2xvYmFsIiwiaWF0IjoxNzI1MDgzNDMyLCJleHAiOjE3MjUwODcwMzIsImNpZCI6IjBvYTFvMnc1bTV4ckFaVEtnMWQ4IiwidWlkIjoiMDB1MW51bmZkMGF4OW93N1ExZDgiLCJzY3AiOlsiY2lxIiwib3BlbmlkIiwib2ZmbGluZV9hY2Nlc3MiLCJwcm9maWxlIl0sImF1dGhfdGltZSI6MTcyNDkxMzM0Mywic3ViIjoiUFJBVEhBTTAwMUBFLk5UVS5FRFUuU0ciLCJsYXN0TmFtZSI6IlBSQVRIQU0iLCJjb3VudHJ5IjoiTk9UX0ZPVU5EIiwiZmlyc3ROYW1lIjoiQUdBUldBTEEiLCJFbWFpbCI6IlBSQVRIQU0wMDFARS5OVFUuRURVLlNHIiwiU1BfU1NPX0FQUFMiOlsiU0MiLCJDUyIsIk1LVFBMIiwiQ0lRIiwiTUkiXSwiY29tcGFueSI6W10sIkZlZDIiOltdLCJGZWQxIjpbIjExOTk1NzA4NTZAY2lxIiwiNzE3MzQ5MTM4QGxlZ2FjeWNpcSJdLCJUZW1wbGF0ZUlkIjoiTlRVU0FNTEBudHUuZWR1LnNnIn0.UzM28l6hxR0-IFqFHc0x8PUu_KM1ujoMciFQ4eMW8wZCJ64OJNaMNq51cUpT4tfhPJUMqfMcX6N8yHvRBmLvGQuk0DYcxWjiA2xJVWGA3d9DGmtJ0muEPSxZ4kMjciD_lpQpwxf2qfhlDR-NTzBFJ1Yb2q9rf5HAtHpCdOPh2YfOznbv7-1j7_ahFVutrHXfBQD6dcrfejcQLmsQRiUm5ybT-WsYYnp_Per-yb-BfGPgelvgSufJE6oX7PkWsdedZaQN49STG1TpTEqMYUbVisYFou3oHbWR4DImwTpuvjukd6sJ0mX9ep7pD_d6Qog8zHymlGuQhKYTkz9hmhIDoA; SP_SSO_JWT_COOKIE=el9Zuu8OI70Dhm17uLk9K9GMV06qEUwrW11yQRdVL0k; SP_SSO_SESS_EXPIRE=20240831235032; SP_SSO_AT_COOKIE=eyJraWQiOiJPLVlDdlpGSzlIekd3N3o5QjR5YTc2M3ViS1RjeU9mMW52clRRa0w4V0I0IiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULmlvaTFmODM5Q1lQeDdLUHRGWDhzRmpneG5Fc2w5SjZ6V2xVOUh4VVluM0kub2Fycng1Ymc3MlVwbWppb3cxZDYiLCJpc3MiOiJodHRwczovL3NlY3VyZS5zaWduaW4uc3BnbG9iYWwuY29tL29hdXRoMi9zcGdsb2JhbCIsImF1ZCI6ImFwaTovL3NwZ2xvYmFsIiwiaWF0IjoxNzI1MDgzNDMyLCJleHAiOjE3MjUwODcwMzIsImNpZCI6IjBvYTFvMnc1bTV4ckFaVEtnMWQ4IiwidWlkIjoiMDB1MW51bmZkMGF4OW93N1ExZDgiLCJzY3AiOlsiY2lxIiwib3BlbmlkIiwib2ZmbGluZV9hY2Nlc3MiLCJwcm9maWxlIl0sImF1dGhfdGltZSI6MTcyNDkxMzM0Mywic3ViIjoiUFJBVEhBTTAwMUBFLk5UVS5FRFUuU0ciLCJsYXN0TmFtZSI6IlBSQVRIQU0iLCJjb3VudHJ5IjoiTk9UX0ZPVU5EIiwiZmlyc3ROYW1lIjoiQUdBUldBTEEiLCJFbWFpbCI6IlBSQVRIQU0wMDFARS5OVFUuRURVLlNHIiwiU1BfU1NPX0FQUFMiOlsiU0MiLCJDUyIsIk1LVFBMIiwiQ0lRIiwiTUkiXSwiY29tcGFueSI6W10sIkZlZDIiOltdLCJGZWQxIjpbIjExOTk1NzA4NTZAY2lxIiwiNzE3MzQ5MTM4QGxlZ2FjeWNpcSJdLCJUZW1wbGF0ZUlkIjoiTlRVU0FNTEBudHUuZWR1LnNnIn0.UzM28l6hxR0-IFqFHc0x8PUu_KM1ujoMciFQ4eMW8wZCJ64OJNaMNq51cUpT4tfhPJUMqfMcX6N8yHvRBmLvGQuk0DYcxWjiA2xJVWGA3d9DGmtJ0muEPSxZ4kMjciD_lpQpwxf2qfhlDR-NTzBFJ1Yb2q9rf5HAtHpCdOPh2YfOznbv7-1j7_ahFVutrHXfBQD6dcrfejcQLmsQRiUm5ybT-WsYYnp_Per-yb-BfGPgelvgSufJE6oX7PkWsdedZaQN49STG1TpTEqMYUbVisYFou3oHbWR4DImwTpuvjukd6sJ0mX9ep7pD_d6Qog8zHymlGuQhKYTkz9hmhIDoA; SP_SSO_AT_COOKIE_EXPIRE=20240831064532; loginSearchCookie=fsbpDITlMl3HsuPShqgZo9EY7kPtG8ZCxGnVtdU9cQ/5ZCF2Te4FjXMSchR+KUBK; CIQ_ARQ_List=|; ASP.NET_SessionId=1hq0j2h2yf0uzfzgdfadb14y; __utma=21616681.59662645.1723549356.1724921949.1725083444.12; __utmb=21616681; _hp2_ses_props.544738949=%7B%22r%22%3A%22https%3A%2F%2Fwww.capitaliq.com%2Fciqdotnet%2FLogin-okta.aspx%22%2C%22ts%22%3A1725083444550%2C%22d%22%3A%22www.capitaliq.com%22%2C%22h%22%3A%22%2FCIQDotNet%2Fmy%2Fdashboard.aspx%22%7D; userLoggedIn=1hq0j2h2yf0uzfzgdfadb14y|8/31/2024 1:53:10 AM|717349138; OptanonConsent=isGpcEnabled=0&datestamp=Sat+Aug+31+2024+11%3A23%3A21+GMT%2B0530+(India+Standard+Time)&version=202310.1.0&browserGpcFlag=0&isIABGlobal=false&hosts=&consentId=0a1ffdca-c6e1-47d6-9c35-bb4c45014f32&interactionCount=2&landingPath=NotLandingPage&groups=C0003%3A1%2CC0002%3A1%2CC0001%3A1&AwaitingReconsent=false&geolocation=IN%3BAS; _hp2_id.544738949=%7B%22userId%22%3A%227241258315538576%22%2C%22pageviewId%22%3A%223626678047026804%22%2C%22sessionId%22%3A%222952513201168708%22%2C%22identity%22%3A%22717349138%22%2C%22trackerVersion%22%3A%224.0%22%2C%22identityField%22%3Anull%2C%22isIdentified%22%3A1%7D; _dd_s=rum=1&id=0b9d424c-3664-4121-acc5-849b9cbb3a3c&created=1725083436983&expire=1725084517700"""
 
-    capiq = CapIQEarningsTranscript(cookie_str)
-    data = capiq.get_transcripts()
-    with open(f"data/capiq_transcripts_{date.today()}.json","w") as f:
-        json.dump(data,f)
+    # capiq = CapIQEarningsTranscript(cookie_str)
+    # data = capiq.get_transcripts()
+    # with open(f"data/capiq_transcripts_{date.today()}.json","w") as f:
+    #     json.dump(data,f)
 
+    # get seeking alpha
+    seeking = SeekingAlpha()
+    data = seeking.get_transcripts()
+    print(data)
     # get AMZN transcript
     # url = "https://www.fool.com/earnings/call-transcripts/2024/08/01/amazoncom-amzn-q2-2024-earnings-call-transcript/"
     # scraper = MotleyFoolEarningsTranscript()
