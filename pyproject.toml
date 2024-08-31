@@ -31,6 +31,7 @@ seaborn = "^0.13.2"
 finnhub-python = "^2.4.20"
 pydantic = "^2.8.2"
 openai = "^1.42.0"
+beautifulsoup4 = "^4.12.3"
 
 
 [build-system]
