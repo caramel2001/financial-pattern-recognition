@@ -161,9 +161,11 @@ class SeekingAlpha(EarningsTranscriptScraper):
     def __init__(self):
         super().__init__()
         self.articles_url = "https://seekingalpha.com/api/v3/articles"
+        self.headers = {'User-Agent': 'Mozilla/5.0'}
 
     def process_response(self,response):
         df = pd.json_normalize(response.json()['data'])[['id', 'type', 'attributes.publishOn','attributes.title', 'relationships.primaryTickers.data','relationships.otherTags.data','links.self']]
+        df['links.self'] = df['links.self'].apply(lambda x: "https://seekingalpha.com" + x)
         tickers = pd.json_normalize(response.json()['included']).set_index('id')
         df['ticker'] = df['relationships.primaryTickers.data'].apply(lambda x: tickers.loc[x[0]['id']]['attributes.name'])
         return df
@@ -252,21 +254,26 @@ class SeekingAlpha(EarningsTranscriptScraper):
         return transcript,json_data
 
 
-    def get_transcripts(self,since:datetime = datetime.today() - timedelta(days=2),until = datetime.today()):
+    def get_transcripts(self,since:datetime = datetime.today() - timedelta(days=1),until = datetime.today()):
         logger.debug(f"Extracting Transcripts since {since}")
         params = {
             "filter[category]": "earnings::earnings-call-transcripts",
             "filter[since]": str(int(since.timestamp())),
             "filter[until]": str(int(until.timestamp())),
-            "include": "primaryTickers,primaryTickers.company",
+            "include": "primaryTickers",
             "isMounting": "False",
             "page[size]": "50",
             "page[number]": "1"
         }
         logger.debug(params)
         response = requests.get(self.articles_url,headers=self.headers,params=params)
+        results = response.json()['meta']['page']['total']
+        if results == 0:
+            logger.debug(f"No transcripts found within the date range {since} - {until}")
+            return []
         print(response.json())
         pages = response.json()['meta']['page']['totalPages']
+        logger.debug(f"Total Pages: {pages}")
         df = self.process_response(response)
         for page in tqdm(range(1, pages+1)):
             params['page[number'] = str(page)
@@ -370,6 +377,7 @@ class CapIQEarningsTranscript(EarningsTranscriptScraper):
         transcripts = [""]*len(transcript_urls)
         count = 0
         for url in tqdm(transcript_urls):
+            logger.debug(url)
             response = requests.get(url,headers=self.headers,cookies=self.cookie_dict)
             soup = BeautifulSoup(response.content, 'html.parser')
             body = self.parse_transcript(soup)
@@ -384,6 +392,7 @@ class CapIQEarningsTranscript(EarningsTranscriptScraper):
         logger.debug(f"Extracting Transcripts since {since}")
         response = requests.get("https://www.capitaliq.com/CIQDotNet/Transcripts/Summary.aspx",headers=self.headers,cookies=self.cookie_dict)
         soup = BeautifulSoup(response.content, 'html.parser')
+        #print(soup.prettify())
         table = soup.find_all('table',attrs={'class':'cTblListBody'})[0] 
         data = list(map(self.parse_row,table.findAll('tr')[1:-1]))
         data = pd.json_normalize(data).dropna(subset=['link'])
@@ -391,7 +400,14 @@ class CapIQEarningsTranscript(EarningsTranscriptScraper):
         data['date'] = pd.to_datetime(data['date'])
         if data['date'].dt.date.min() < since:
             data = data[data['date'].dt.date >=since]
-            return data
+            if len(data) == 0:
+                return []
+            # else extract the transcripts
+            transcripts = self.get_transcripts_body(data['link'].tolist())
+            data['transcripts'] = transcripts
+            # turn the datetime to string
+            data['date'] = data['date'].dt.strftime('%Y-%m-%d %H:%M:%S')
+            return data.to_dict(orient='records')
         form_data = form_data = {
             "__EVENTTARGET": "_transcriptsGrid$_dataGrid",
             "__EVENTARGUMENT": "",
@@ -409,6 +425,9 @@ class CapIQEarningsTranscript(EarningsTranscriptScraper):
             temp = list(map(self.parse_row,table.findAll('tr')[1:-1]))
             temp = pd.json_normalize(temp).dropna(subset=['link'])
             temp['date'] = pd.to_datetime(temp['date'])
+            if len(temp) == 0:
+                page+=1
+                continue
             if temp['date'].dt.date.min() < since:
                 temp = temp[temp['date'].dt.date > since]
                 data = pd.concat([data,temp])
