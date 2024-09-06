@@ -33,6 +33,7 @@ pydantic = "^2.8.2"
 openai = "^1.42.0"
 beautifulsoup4 = "^4.12.3"
 loguru = "^0.7.2"
+coinbase-advanced-py = "^1.6.1"
 
 
 [build-system]

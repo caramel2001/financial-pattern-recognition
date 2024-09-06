@@ -15,10 +15,38 @@ poetry run python -m exp.openai_transcript # extract analysis using OpenAI API a
 poetry run python -m exp.screener  # get screened stocks from SeekingAlpha
 ```
 
+
+
 ## Reading
 
-- 
--
+- A Multimodal Foundation Agent for Financial Trading: Tool-Augmented, Diversified, and Generalist
+- Pairs trading with a mean-reverting jump-diffusion model on high-frequency data
+- Stock Market Prediction Using Hidden Markov Models
+- Stock Market Trend Analysis Using Hidden Markov Model and Long Short Term Memory
+- Hidden Markov Models Applied To Intraday Momentum Trading With Side Information
+- FactorVAE: A Probabilistic Dynamic Factor Model Based on Variational Autoencoder for Predicting Cross-Sectional Stock Returns
+- Evaluation of Dynamic Cointegration-Based Pairs Trading Strategy in the Cryptocurrency Market
+- Copula-Based Trading of Cointegrated Cryptocurrency Pairs
+- TRADING STRATEGIES WITH COPULAS
+- Deep neural networks, gradient-boosted trees, random forests: Statistical arbitrage on the S&P 500
+- Financial Machine Learning
+- Financial Statement Analysis with Large Language Models
+
+## Data Sources
+
+**Please help find any data source you guys are able to find for any kind of financial data useful.** 
+
+Data Sources currently Supporting:
+- CapIQ : NTU loging and Cookie Extraction based scraping. Curenlty only extracting Earnings Transcript Data
+- SeekingAlpha : Screener and Earnings Transcript(US)
+- Screener.in : Indian Market Fundamentals Data(Last 10 years)
+- Fyers API : For Indian Market Minute and second interval data Data
+- US Fundamentals data from 2010 to 2020 : https://www.kaggle.com/datasets/finnhub/reported-financials
+- Coinbase for Crypto Price data
+
+**Data Source Needed**
+- Good free soruce to get US market real time fundamentals. Not sure if Yahoo Finance is reliable, AlphaVantage got Free API but limited API calls
+,https://finnhub.io/docs/api/financials-reported
 
 ## TODO
 
@@ -26,6 +54,7 @@ poetry run python -m exp.screener  # get screened stocks from SeekingAlpha
 - https://www.marketpsych.com/home
 - Company Financial Analyszer using OpenAI
 - Make a diversifier
+- Research on good Order Execution algorithm such that if we want to open a position in a company next day or within a week, we are able to execute the order optimally without adding losses to our position due daily volatility
 
 
 ## Existing SEC Analyzers

@@ -23,4 +23,6 @@ settings = {
     "FYERS_PIN": getenv("FYERS_PIN"),
     "FINNHUB_API_KEY": getenv("FINNHUB_API_KEY"),
     "OPENAI_API_KEY": getenv("OPENAI_API_KEY"),
+    "COINBASE_API_KEY": getenv("COINBASE_API_KEY"),
+    "COINBASE_SECRET_KEY": getenv("COINBASE_SECRET_KEY"),
 }
