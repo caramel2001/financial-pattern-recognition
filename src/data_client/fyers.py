@@ -38,7 +38,7 @@ class FyersBase:
 
     def get_access_token(self,auth_code=None,refresh_token:bool=False):
         if refresh_token:
-            url = "https://api.fyers.in/api/v3/validate-refresh-token"
+            url = "https://api-t1.fyers.in/api/v3/validate-refresh-token"
             headers = {
                 "Content-Type":"application/json"
             }
@@ -50,9 +50,7 @@ class FyersBase:
                 "refresh_token": self.refresh_token,
                 "pin": settings["FYERS_PIN"],
             }
-            #print(data_raw)
             response = requests.post(url,headers=headers,json=data_raw)
-            #print(response.content)
             response = response.json()
             try:
                 if response['code'] != 200:
@@ -156,17 +154,18 @@ class FyersData(FyersBase):
         exchange = self.validate_exchange(exchange)
         symbol = "{}:{}".format(exchange,symbol)
         interval = self.validate_interval(interval)
-        
-        start = calendar.timegm(start.timetuple())
-        end = calendar.timegm(end.timetuple())
-       # print(start,end)
+        # # epoch value
+        # start = str(int(start.timestamp()))
+        # end = str(int(end.timestamp()))
+        # start = calendar.timegm(start.timetuple())
+        # end = calendar.timegm(end.timetuple())
         data = {
             "symbol":symbol,
             "resolution":interval,
-            "date_format":"0",
-            # epoch value
-            "range_from": start,
-            "range_to": end,
+            "date_format":"1", 
+            # yyyy-mm-dd
+            "range_from": start.strftime("%Y-%m-%d"),
+            "range_to": end.strftime("%Y-%m-%d"),
             "cont_flag":"1",
         }
         return self.fyers.history(data)

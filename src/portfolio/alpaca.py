@@ -44,7 +44,7 @@ class PaperFolio:
     
     def cancel_orders(self,UUIDs:list,all_orders:bool=False):
         if all_orders:
-            cancel_statuses = self.client.cancel_all_orders()
+            cancel_statuses = self.client.cancel_orders()
         else:
             cancel_statuses = []
             for id in UUIDs:
@@ -61,7 +61,7 @@ class PaperFolio:
             self.client.close_all_positions(cancel_orders=True)
         else:
             for symbol in symbols_or_asset_ids:
-                self.client.close_position(symbol,cancel_orders=True)
+                self.client.close_position(symbol)
 
     def get_all_equity_assets(self):
         request = GetAssetsRequest(

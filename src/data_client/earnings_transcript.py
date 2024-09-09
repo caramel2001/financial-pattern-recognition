@@ -9,6 +9,8 @@ from loguru import logger
 from tqdm import tqdm
 import pytz
 import time
+import browser_cookie3
+
 # motley fool
 # https://www.kaggle.com/datasets/tpotterer/motley-fool-scraped-earnings-call-transcripts?select=motley-fool-data.pkl ()
 
@@ -298,9 +300,20 @@ class SeekingAlpha(EarningsTranscriptScraper):
         return df.to_dict(orient='records')
 
 class CapIQEarningsTranscript(EarningsTranscriptScraper):
-    def __init__(self,cookie_str):
+    def __init__(self,cookie_str=None):
         super().__init__()
-        self.cookie_dict = self.get_cookie_dict(cookie_str)
+        if cookie_str == None:
+            cookie_present = False
+            # get cookies using browser_cookie3
+            cj = browser_cookie3.chrome()
+            for cookie in cj:
+                if "capitaliq" in cookie.domain:
+                    cookie_present = True
+                    self.cookie_dict = cj
+            if not cookie_present:
+                raise Exception("Cookie not found in Chrome. Please login to Capital IQ and try again or provide the cookie string")
+        else:
+            self.cookie_dict = self.get_cookie_dict(cookie_str)
 
     def get_cookie_dict(self,cookie_str):
         cookies_dict = dict(item.split("=", 1) for item in cookie_str.split("; "))
@@ -308,6 +321,10 @@ class CapIQEarningsTranscript(EarningsTranscriptScraper):
 
     def parse_transcript(self,soup:BeautifulSoup):
         # speaker positions
+        # check if the transcript is still streaming
+        if soup.find("span",attrs={'class':'headerTitle'}).text == "Streaming Transcripts":
+            return ["Streaming"]
+
         start_pres= False
         speaker = ""
         text=""
@@ -343,7 +360,10 @@ class CapIQEarningsTranscript(EarningsTranscriptScraper):
         return body
 
     def parse_row(self,row):
+        streaming = row.find("a",attrs={"title":"Launch Streaming Viewer"})
+        streaming  = True if streaming else False
         row = row.findAll('td')
+        
         if row[3].text.strip() != "Earnings Call":
             return {
                 "date": None,
@@ -351,7 +371,8 @@ class CapIQEarningsTranscript(EarningsTranscriptScraper):
                 "company_name": None,
                 "quarter": None,
                 "ticker": None,
-                "exchange": None
+                "exchange": None,
+                "streaming" : False,
             }
         date = row[1].text.strip()
         link = "https://www.capitaliq.com" + row[2].find('a').attrs['href']
@@ -370,7 +391,8 @@ class CapIQEarningsTranscript(EarningsTranscriptScraper):
             "company_name": company_name,
             "quarter": quarter,
             "ticker": ticker,
-            "exchange": exchange
+            "exchange": exchange,
+            "streaming" : streaming,
         }      
 
     def get_transcripts_body(self,transcript_urls:list,sleep_count:int=20):
@@ -392,15 +414,16 @@ class CapIQEarningsTranscript(EarningsTranscriptScraper):
         logger.debug(f"Extracting Transcripts since {since}")
         response = requests.get("https://www.capitaliq.com/CIQDotNet/Transcripts/Summary.aspx",headers=self.headers,cookies=self.cookie_dict)
         soup = BeautifulSoup(response.content, 'html.parser')
-        #print(soup.prettify())
         table = soup.find_all('table',attrs={'class':'cTblListBody'})[0] 
         data = list(map(self.parse_row,table.findAll('tr')[1:-1]))
         data = pd.json_normalize(data).dropna(subset=['link'])
-        #print(data)
+        # if streaming then drop
+        data = data[data['streaming'] == False]
         data['date'] = pd.to_datetime(data['date'])
         if data['date'].dt.date.min() < since:
             data = data[data['date'].dt.date >=since]
             if len(data) == 0:
+                logger.debug(f"No transcripts found within the date range {since}")
                 return []
             # else extract the transcripts
             transcripts = self.get_transcripts_body(data['link'].tolist())
@@ -424,6 +447,8 @@ class CapIQEarningsTranscript(EarningsTranscriptScraper):
             table = soup.find_all('table',attrs={'class':'cTblListBody'})[0] 
             temp = list(map(self.parse_row,table.findAll('tr')[1:-1]))
             temp = pd.json_normalize(temp).dropna(subset=['link'])
+            # if streaming then drop
+            temp = temp[temp['streaming'] == False]
             temp['date'] = pd.to_datetime(temp['date'])
             if len(temp) == 0:
                 page+=1
