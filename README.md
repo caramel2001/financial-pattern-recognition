@@ -31,6 +31,7 @@ poetry run python -m exp.screener  # get screened stocks from SeekingAlpha
 - Deep neural networks, gradient-boosted trees, random forests: Statistical arbitrage on the S&P 500
 - Financial Machine Learning
 - Financial Statement Analysis with Large Language Models
+- Fast Portfolio Diversification
 
 ## Data Sources
 

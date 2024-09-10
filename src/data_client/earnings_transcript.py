@@ -321,10 +321,6 @@ class CapIQEarningsTranscript(EarningsTranscriptScraper):
 
     def parse_transcript(self,soup:BeautifulSoup):
         # speaker positions
-        # check if the transcript is still streaming
-        if soup.find("span",attrs={'class':'headerTitle'}).text == "Streaming Transcripts":
-            return ["Streaming"]
-
         start_pres= False
         speaker = ""
         text=""
@@ -420,7 +416,7 @@ class CapIQEarningsTranscript(EarningsTranscriptScraper):
         # if streaming then drop
         data = data[data['streaming'] == False]
         data['date'] = pd.to_datetime(data['date'])
-        if data['date'].dt.date.min() < since:
+        if len(data)!=0 and data['date'].dt.date.min() < since:
             data = data[data['date'].dt.date >=since]
             if len(data) == 0:
                 logger.debug(f"No transcripts found within the date range {since}")
@@ -431,7 +427,7 @@ class CapIQEarningsTranscript(EarningsTranscriptScraper):
             # turn the datetime to string
             data['date'] = data['date'].dt.strftime('%Y-%m-%d %H:%M:%S')
             return data.to_dict(orient='records')
-        form_data = form_data = {
+        form_data  = {
             "__EVENTTARGET": "_transcriptsGrid$_dataGrid",
             "__EVENTARGUMENT": "",
             "__VIEWSTATE":  "",

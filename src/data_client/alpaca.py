@@ -25,13 +25,13 @@ class Options:
         return data
     
 class Stock:
-    def __init__(self, api_key:str,secret_key, start_date:datetime=None, end_date:datetime=None, timeframe:TimeFrame = TimeFrame(1,TimeFrameUnit.Minute)):
+    def __init__(self, api_key:str,secret_key, start_date:datetime=None, end_date:datetime=None, timeframe:TimeFrame = TimeFrame(1,TimeFrameUnit.Minute),raw_data:bool=False):
         self.api_key = api_key
         self.secret_key = secret_key
         self.start_date = start_date
         self.end_date = end_date
         self.timeframe = timeframe
-        self.client = StockHistoricalDataClient(api_key,secret_key)
+        self.client = StockHistoricalDataClient(api_key,secret_key,raw_data=raw_data)
 
     def get_premarket_price(self,tickers:list):
         """Gets the latest quote for a stock"""
