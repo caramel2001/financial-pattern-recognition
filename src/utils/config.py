@@ -25,4 +25,5 @@ settings = {
     "OPENAI_API_KEY": getenv("OPENAI_API_KEY"),
     "COINBASE_API_KEY": getenv("COINBASE_API_KEY"),
     "COINBASE_SECRET_KEY": getenv("COINBASE_SECRET_KEY"),
+    "MONGO_URI": getenv("MONGO_URI"),
 }

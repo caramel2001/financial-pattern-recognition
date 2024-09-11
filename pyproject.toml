@@ -36,6 +36,7 @@ loguru = "^0.7.2"
 coinbase-advanced-py = "^1.6.1"
 browser-cookie3 = "^0.19.1"
 pyportfolioopt = "^1.5.5"
+pymongo = "^4.8.0"
 
 
 [build-system]

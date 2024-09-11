@@ -46,18 +46,20 @@ class MotleyFoolEarningsTranscript(EarningsTranscriptScraper):
 
         for i in range(len(metas)):
             if date is not None:
-                if datetime.strptime(metas[i]['Transcript date'],"%b %d, %Y").date() < date.date():
-                    logger.debug(f"Reached date {datetime.strptime(metas[i]['Transcript date'],'%b %d, %Y').date()} stopping extraction")
+                if datetime.strptime(metas[i]['date'],"%b %d, %Y").date() < date.date():
+                    logger.debug(f"Reached date {datetime.strptime(metas[i]['date'],'%b %d, %Y').date()} stopping extraction")
                     break
-            with tqdm(total=1,desc=f"Extracting {metas[i]['Company']} Transcript Body") as pbar:
-                transcript,exchange = self.get_transcript_data(metas[i]['url_transcript'])
+            with tqdm(total=1,desc=f"Extracting {metas[i]['company_name']} Transcript Body") as pbar:
+                transcript,exchange = self.get_transcript_data(metas[i]['link'])
                 pbar.update(1)
                 metas[i]['exchange'] = exchange
-                metas[i]['body'] = transcript
+                metas[i]['transcripts'] = transcript
             count += 1
             if count % sleep_count == 0:
                 logger.debug(f"Sleeping for 30 seconds")
                 time.sleep(30)
+        # remove entries less than the date
+        metas = [meta for meta in metas if datetime.strptime(meta['date'],"%b %d, %Y").date() >= date.date()]
         return metas      
 
     def extract_meta_data(self,html_content:str):
@@ -77,11 +79,11 @@ class MotleyFoolEarningsTranscript(EarningsTranscriptScraper):
             date = transcript.find_all('div')[1].text.split("by")[0].strip()
 
             transcript_info = {
-                "Company": company_name,
-                "Ticker": ticker_symbol,
-                "Transcript date": date,
+                "company_name": company_name,
+                "ticker": ticker_symbol,
+                "date": date,
                 "Earning Call Period": period.strip(),
-                "url_transcript": url_transcript,
+                "link": url_transcript,
                 "quarter": "Q" + quarter,
                 "year": year
             }
