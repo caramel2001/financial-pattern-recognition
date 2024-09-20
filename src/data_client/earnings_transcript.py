@@ -362,7 +362,7 @@ class CapIQEarningsTranscript(EarningsTranscriptScraper):
         streaming  = True if streaming else False
         row = row.findAll('td')
         
-        if row[3].text.strip() != "Earnings Call":
+        if row[3].text.strip() not in ["Earnings Call"]:
             return {
                 "date": None,
                 "link": None,

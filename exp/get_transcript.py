@@ -46,10 +46,10 @@ if __name__ == "__main__":
     # have to automate this cookie part
     # cookie_str = """"""
     # capiq = CapIQEarningsTranscript()
-    # data = capiq.get_transcripts(since=date.today() - timedelta(days=1))
+    # transcripts = capiq.get_transcripts(since=date.today() - timedelta(days=1))
 
     # logger.debug("Getting estimates")
-    # for transcript in data:
+    # for transcript in transcripts:
     #     # only extract for NASDAQ and NYSE
     #     logger.debug(f"Getting estimates for {transcript['ticker']}")
     #     if transcript['exchange']=="NYSE" or "Nasdaq" in transcript['exchange']:
@@ -63,7 +63,7 @@ if __name__ == "__main__":
     #     transcript['source'] = "CapIQ"
 
     # with open(f"data/capiq_transcripts_{date.today()}.json","w") as f:
-    #     json.dump(data,f)
+    #     json.dump(transcripts,f)
 
     # store the transcripts in mongoDB
     mongo_client.store_transcripts(transcripts)

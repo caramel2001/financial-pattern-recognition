@@ -32,6 +32,13 @@ poetry run python -m exp.screener  # get screened stocks from SeekingAlpha
 - Financial Machine Learning
 - Financial Statement Analysis with Large Language Models
 - Fast Portfolio Diversification
+- Deep Reinforcement Learning Approach for Trading Automation in The Stock Market
+- Pattern Recognition in Financial Data Using Association Rule
+- Efficient Analysis of Pattern and Association Rule Mining Approaches
+- Pattern recognition using hidden Markov modelsin financial time series
+- Slow Momentum with Fast Reversion: A Trading Strategy Using Deep Learning and Changepoint Detection
+- FEW-SHOT LEARNING PATTERNS IN FINANCIAL TIME-SERIES FOR TREND-FOLLOWING STRATEGIES
+- Trading with the Momentum Transformer: An Intelligent and Interpretable Architecture
 
 ## Data Sources
 
@@ -48,7 +55,8 @@ Data Sources currently Supporting:
 **Data Source Needed**
 - Good free soruce to get US market real time fundamentals. Not sure if Yahoo Finance is reliable, AlphaVantage got Free API but limited API calls
 ,https://finnhub.io/docs/api/financials-reported
-
+- https://www.macrotrends.net/stocks/charts/NVDA/nvidia/cash-flow-statement
+- https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=TEN&type=10-Q&dateb=&owner=exclude&count=100
 ## TODO
 
 - Markov Models
@@ -66,6 +74,27 @@ Data Sources currently Supporting:
 
 
 ## Ideas
+
+### Chan Strats
+- Buy on Gap Model for Nifty Index, NIFTYBANK INDEX, MIDCAP INDEX
+- Short on Gap Model for Indexes
+- Kalman Filter Mean Reversion Strategy
+
+### Analysis on the Next trading day of the Stock that realeased their earnings or any fillings post market or pre market
+
+- Track 10K,10Q,8K etc
+   - 10K - An annual report that includes audited financial statements for a company. It includes the company's income statement, balance sheet, statement of cash flows, and statement of stockholders' equity. 
+   - 10Q -  A quarterly report that includes unaudited financial statements for a company. It's filed three times a year, and is useful for stakeholders who want to - see a company's short-term changes. 
+   - Annual report - A report that contains financial data, charts, illustrations, photos, and a letter from the CEO. It's geared toward shareholders. 
+   - Proxy statement - A statement that allows shareholders to cast their votes using a designated person, called a proxy. 
+   - Analytical report - A report that uses analytical evidence and predictive analytics technologies to generate accurate forecasts. 
+   - Client report - A report that details a business's relationship with each client and their work activities. It helps the business make management decisions. 
+   - 8-K - A form that's filed in the period between 10-Q filings, or in case of a significant event, such as a CEO departing or bankruptcy. 
+   - Form 144 - is a document filed with the SEC by someone who intends to sell restricted or control securities, such as when an affiliate sells shares.  Valid for 90 days, and can help predict future sales. Form 144 must be filed if the investor plans to sell more than 5,000 shares or $50,000 of total stock within a three-month period.
+   - Form 4 - Insiders, or those related to insiders, must file Form 4 when they actually sell the restricted stock. Form 4 is filed within two business days of the transaction. 
+
+- Perform Intraday time series analysis on the next trading day. The assumption is the stocks which show rapid change in the market sentiments due to the reuslts from the fillings might showcase similar patterns of trading. Check whether there is any significant implications of the Report to volatility of stock price post the report release and also is there any difference based on the market sentiment of the stock.
+
 
 ### Momentum Based Portfolio:
 

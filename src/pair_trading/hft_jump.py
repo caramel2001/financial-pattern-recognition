@@ -5,6 +5,14 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
 
+def overnight_intraday_jumps_analysis(data, threshold=0.01):
+    # For each sub-period, determine the spreads of all possible pair combinations. The absolute first differences of each spread are splitted into the subsets overnight variations and intraday variations.s. For the overnight and intraday variations, we consider the highest 1−q variations for q ∈ {0.90, 0.95, 0.97, 0.99, 0.999}. 
+    # Now, the jump threshold cq (cq ∈ R+) is calculated based on the q-quantile of the whole data base of overnight and intraday variations together. We estimate the jump intensity λ by the following: 
+
+    # λ overnight(intraday) = number of overnight (intraday) variations greater than cq/total number of overnight (intraday) variations 
+
+    pass
+
 # Function to estimate parameters using MLE for the JDM
 def log_likelihood(params, spread):
     theta, mu, sigma, lambd = params
