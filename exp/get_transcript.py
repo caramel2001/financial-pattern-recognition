@@ -38,9 +38,7 @@ if __name__ == "__main__":
         transcript['revenue_estimate'] = revenue_estimate
         transcript['eps_estimate'] = eps_estimate
         transcript['source'] = "Motley Fool"
-    with open(f"data/fool_transcripts_{date.date()}.json","w") as f:
-        json.dump(transcripts,f)
-    
+   
     
 
     # have to automate this cookie part
