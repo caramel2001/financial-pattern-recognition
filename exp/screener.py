@@ -11,11 +11,11 @@ from loguru import logger
 
 def screener():
     screen = SeekingAlpha()
-    # logger.debug("Getting screen stocks from Seeking Alpha")
-    # screen_df = screen.get_screen_stocks()
-    # #print(screen_df.head())
+    logger.debug("Getting screen stocks from Seeking Alpha")
+    screen_df = screen.get_screen_stocks()
+    #print(screen_df.head())
     # screen_df.to_csv(f"data/seeking_alpha_screen_{date.today()}.csv")
-    screen_df = pd.read_csv(f"data/seeking_alpha_screen_{date.today()}.csv")
+    # screen_df = pd.read_csv(f"data/seeking_alpha_screen_{date.today()}.csv")
 
     return screen_df
 
@@ -56,8 +56,8 @@ def update_paper_portfolio(screen_df:pd.DataFrame):
         if symbol not in screen_df['attributes.name'].tolist():
             # now clearing positions to be removed from the portfolio
             logger.debug(f"Removing {symbol} from the portfolio")
-            #portfolio.close_positions([symbol])
-            #logger.debug(f"Clearing Order submitted for {symbol}")
+            portfolio.close_positions([symbol])
+            logger.debug(f"Clearing Order submitted for {symbol}")
 
     logger.debug(f"Amount to change in qty to acheive new Portfolio: {amount_change}")
     # get limit price for each stock
@@ -81,14 +81,14 @@ def update_paper_portfolio(screen_df:pd.DataFrame):
             logger.debug(f"Creating sell market order for {symbol} for {abs(qty)}")
             side = OrderSide.SELL
             qty = abs(qty)
-            # order = portfolio.create_market_order(symbol,qty,side)
-            # logger.debug(f"Order submitted for {symbol}: {order}")
+            order = portfolio.create_market_order(symbol,qty,side)
+            logger.debug(f"Order submitted for {symbol}: {order}")
         else:
             logger.debug(f"Creating buy limit order for {symbol} for {qty}")
             side = OrderSide.BUY
             # order = portfolio.create_limit_order(symbol,qty,side,limit_price)
-            # order = portfolio.create_market_order(symbol,qty,side)
-            # logger.debug(f"Order submitted for {symbol}: {order}")
+            order = portfolio.create_market_order(symbol,qty,side)
+            logger.debug(f"Order submitted for {symbol}: {order}")
     
 
 def get_limit_price(data:dict):

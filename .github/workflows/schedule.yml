@@ -2,8 +2,10 @@ name: Daily Script
 
 on:
   schedule:
-  # Runs daily at 9pm UTC
-    - cron: '10 2 * * *'
+    # Runs daily at 9pm UTC
+    - cron: '0 13 * * *'  # This is your original daily script schedule
+    # Runs Monday to Friday at 12:30 PM UTC (1 hour before US market opens at 9:30 AM ET)
+    - cron: '30 12 * * 1-5'
 
 jobs:
   run_script:
@@ -41,3 +43,37 @@ jobs:
       - name: Run Python script
         run: poetry run python -m exp.get_transcript
 
+  run_screener:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9.15'
+
+      - name: Cache Poetry dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry
+          key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "PATH=$HOME/.local/bin:$PATH" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-ansi
+
+      - name: Create .env file
+        run: |
+          echo "MONGO_URI=${{ secrets.MONGO_URI }}" > .env
+
+      - name: Run Python screener script
+        run: poetry run python -m exp.screener
