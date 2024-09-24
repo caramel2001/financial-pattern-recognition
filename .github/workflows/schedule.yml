@@ -74,6 +74,8 @@ jobs:
       - name: Create .env file
         run: |
           echo "MONGO_URI=${{ secrets.MONGO_URI }}" > .env
+          echo "ALPACA_SECRET_KEY=${{ secrets.ALPACA_SECRET_KEY }}" >> .env
+          echo "ALPACA_API_KEY=${{ secrets.ALPACA_API_KEY }}" >> .env
 
       - name: Run Python screener script
         run: poetry run python -m exp.screener
