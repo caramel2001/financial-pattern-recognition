@@ -2,10 +2,11 @@ name: Daily Script
 
 on:
   schedule:
-    - cron: '0 13 * * *'  # This is your original daily script schedule
+    # Runs Monday to Friday at 12:30 PM UTC (1 hour before US market opens at 9:30 AM ET)
+    - cron: '30 12 * * 1-5'
 
 jobs:
-  run_script:
+  run_screener:
     runs-on: ubuntu-latest
 
     steps:
@@ -36,6 +37,8 @@ jobs:
       - name: Create .env file
         run: |
           echo "MONGO_URI=${{ secrets.MONGO_URI }}" > .env
+          echo "ALPACA_SECRET_KEY=${{ secrets.ALPACA_SECRET_KEY }}" >> .env
+          echo "ALPACA_API_KEY=${{ secrets.ALPACA_API_KEY }}" >> .env
 
-      - name: Run Python script
-        run: poetry run python -m exp.get_transcript
+      - name: Run Python screener script
+        run: poetry run python -m exp.screener
