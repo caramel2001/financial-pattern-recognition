@@ -1,5 +1,4 @@
-name: Daily Script
-
+name: Alpaca
 on:
   schedule:
     # Runs Monday to Friday at 12:30 PM UTC (1 hour before US market opens at 9:30 AM ET)

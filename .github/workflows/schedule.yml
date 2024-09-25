@@ -1,5 +1,4 @@
-name: Daily Script
-
+name: Transcript
 on:
   schedule:
     - cron: '0 13 * * *'  # This is your original daily script schedule
