@@ -17,16 +17,21 @@ for stock in stocks:
     if stock in unique_tickers:
         logger.info(f"Data for {stock} already present in the database")
         continue
-    ticker = stock.split("/")[0]
-    comp_name = stock.split("/")[1]
-    data = client.get_all_fundamentals_data(stock)
-    # store data in mongo
-    mongo_data={
-        "url":stock,
-        "ticker":ticker,
-        "comp_name":comp_name,
-        "data":data,
-        "updated_at":datetime.now()
-    }
-    mongo_client.store_macrotrends_data(mongo_data)
-    logger.info(f"Data for {stock} stored in the database")
+    try: 
+        ticker = stock.split("/")[0]
+        comp_name = stock.split("/")[1]
+        data = client.get_all_fundamentals_data(stock)
+        # store data in mongo
+        mongo_data={
+            "url":stock,
+            "ticker":ticker,
+            "comp_name":comp_name,
+            "data":data,
+            "updated_at":datetime.now()
+        }
+        mongo_client.store_macrotrends_data(mongo_data)
+        logger.info(f"Data for {stock} stored in the database")
+    except Exception as e:
+        logger.error(f"Error in extracting data for {stock}")
+        logger.error(e)
+        break
