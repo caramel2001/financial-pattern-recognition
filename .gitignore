@@ -7,3 +7,5 @@ logs
 token.txt
 .DS_Store
 papers/
+tests/
+src/ML/rl

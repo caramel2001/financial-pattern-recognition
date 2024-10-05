@@ -57,6 +57,7 @@ Data Sources currently Supporting:
 ,https://finnhub.io/docs/api/financials-reported
 - https://www.macrotrends.net/stocks/charts/NVDA/nvidia/cash-flow-statement
 - https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=TEN&type=10-Q&dateb=&owner=exclude&count=100
+- https://discountingcashflows.com/documentation/financial-api-guide/#sec-filings
 ## TODO
 
 - Markov Models
@@ -64,7 +65,11 @@ Data Sources currently Supporting:
 - Company Financial Analyszer using OpenAI
 - Make a diversifier
 - Research on good Order Execution algorithm such that if we want to open a position in a company next day or within a week, we are able to execute the order optimally without adding losses to our position due daily volatility
+- OpenFE
 
+## LLM Based Analyst
+- https://github.com/Athe-kunal/finance_llm_data/tree/main
+- QUANTITATIVE EQUITY INVESTING FRANK J. FABOZZI, SERGIO M. FOCARDI, PETTER N. KOLM Techniques and Strategies
 
 ## Existing SEC Analyzers
 
