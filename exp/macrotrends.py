@@ -3,6 +3,7 @@ from src.database.mongoDB import MongoDB
 from src.utils.config import settings
 from datetime import datetime
 from loguru import logger
+import time
 client = MacrotrendsClient()
 
 stocks = client.get_all_stocks()
@@ -12,10 +13,13 @@ db = mongo_client.client[mongo_client.maps['macrotrends']['database']]
 collection = db[mongo_client.maps['macrotrends']['collection']]
 unique_tickers = collection.distinct("url")
 
-
-for stock in stocks:
+no_data_stocks=['AAM/aa-mission-acquisition']
+for stock in stocks[20:]:
     if stock in unique_tickers:
         logger.info(f"Data for {stock} already present in the database")
+        continue
+    if stock in no_data_stocks:
+        logger.info(f"No data for {stock}")
         continue
     try: 
         ticker = stock.split("/")[0]
@@ -35,3 +39,5 @@ for stock in stocks:
         logger.error(f"Error in extracting data for {stock}")
         logger.error(e)
         break
+        # logger.info(f"Skipping {stock} and sleeping for 20 seconds")
+        # time.sleep(20)

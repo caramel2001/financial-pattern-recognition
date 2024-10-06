@@ -4,6 +4,7 @@ import json
 import pandas as pd
 from bs4 import BeautifulSoup
 from loguru import logger 
+import browser_cookie3
 
 def etl(response):
     #regex to find the data
@@ -27,33 +28,36 @@ class MacrotrendsClient:
         self.base_url = 'https://www.macrotrends.net'
         self.session = requests.Session()
         self.session.headers.update(
-            {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'})
-    
+            {'User-Agent':'Mozilla/5.0'})
+        # update the session with the cookies
+        cj = browser_cookie3.chrome()
+        self.session.cookies = cj
+
     def get_financial_ratios(self, ticker):
         logger.info("Getting Financial Ratios")
         url = f'{self.base_url}/stocks/charts/{ticker}/financial-ratios?freq=Q'
-        response = self.session.get(url)
+        response = self.session.get(url,headers={'User-Agent':'Mozilla/5.0'})
         df = etl(response)
         return df
     
     def get_income_statement(self, ticker):
         logger.info("Getting Income Statement")
         url = f'{self.base_url}/stocks/charts/{ticker}/income-statement?freq=Q'
-        response = self.session.get(url)
+        response = self.session.get(url,headers={'User-Agent':'Mozilla/5.0'})
         df = etl(response)
         return df
     
     def get_balance_sheet(self, ticker):
         logger.info("Getting Balance Sheet")
         url = f'{self.base_url}/stocks/charts/{ticker}/balance-sheet?freq=Q'
-        response = self.session.get(url)
+        response = self.session.get(url,headers={'User-Agent':'Mozilla/5.0'})
         df = etl(response)
         return df
     
     def get_cash_flow(self, ticker):
         logger.info("Getting CashFlow data")
         url = f'{self.base_url}/stocks/charts/{ticker}/cash-flow-statement?freq=Q'
-        response = self.session.get(url)
+        response = self.session.get(url,headers={'User-Agent':'Mozilla/5.0'})
         df = etl(response)
         return df
     
