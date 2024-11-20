@@ -9,3 +9,8 @@ token.txt
 papers/
 tests/
 src/ML/rl
+user_data/
+*config*
+tradesv3.dryrun.sqlite
+tradesv3.dryrun.sqlite-shm
+tradesv3.dryrun.sqlite-wal

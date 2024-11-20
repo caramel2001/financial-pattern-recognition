@@ -76,14 +76,22 @@ class Seasonal:
 
         return test_results
 
-    def variance_analysis(self,log=True,period:str='M',significance=0.05,plot=True):
+    def variance_analysis(self,log=True,period:str='M',custom_period=False, reference_period=None,significance=0.05,plot=True):
         """Perform ANNOVA Analysis on the price series in order to quantify the effect of the period on the price series"""
 
         data = self.data.copy()
         data = np.log(data) if log else data
-
-        data,reference = self.create_freq_column(data,period)
-
+        if not custom_period:
+            data,reference = self.create_freq_column(data,period)
+            print(data.head())
+        else:
+            # check whether data has period column
+            if "period" not in data.columns:
+                raise ValueError("'period' column not found in the data")
+            # check the reference period is passed
+            if reference_period is None:
+                raise ValueError("Reference period is not passed")
+            reference = reference_period
         test_results = self.annova_analysis(data,reference,significance)
         if plot:
             self.plot_annova_results(test_results)
@@ -91,7 +99,7 @@ class Seasonal:
         return test_results
     
     def annova_analysis(self,data,reference,significance=0.05):
-        model = ols(f'Close ~ C(period, Treatment(reference={reference}))', data=data).fit() 
+        model = ols(f'close ~ C(period, Treatment(reference={reference}))', data=data).fit() 
         # We use the last period as the reference period so that means the intercept represents last period  and all other periods are compared to last period
         anova_table = anova_lm(model)
         print(anova_table)
@@ -115,7 +123,6 @@ class Seasonal:
 
         return test_results
     
-
     def non_parametric_test(self,log=True,period:str='M',significance=0.05,plot=True):
         """Performs non-parametric test(Kruskal-Wallis) to check if the periods have a significant effect on the price series"""
         data = self.data.copy()
@@ -188,8 +195,6 @@ class Seasonal:
         fig.align_ylabels(axes)
         plt.show()
 
-
-
 def SeasonalStrategy():
     """Seasonal Strategy"""
 
@@ -200,16 +205,25 @@ def SeasonalStrategy():
         if "Close" not in self.data.columns:
             raise ValueError("'Close' price column not found in the data")
 
-    def trading_signal(self,period:str='M'):
+    def trading_signal(self, period: str = 'M'):
         """Generates the trading signal based on the seasonal analysis"""
-        analysis_df = self.analyzer.variance_analysis(self.data,period = period,plot=False)
+        analysis_df = self.analyzer.variance_analysis(self.data, period=period, plot=False)
 
         coeffs = analysis_df['Coefficient']
 
-        # long signals - find range from local minima to local maxima
-    
-    
-        
+        # Identify local minima and maxima
+        local_minima = (coeffs.shift(1) > coeffs) & (coeffs.shift(-1) > coeffs)
+        local_maxima = (coeffs.shift(1) < coeffs) & (coeffs.shift(-1) < coeffs)
+
+        # Generate trading signals
+        signals = pd.Series(index=coeffs.index, dtype='float64')
+        signals[local_minima] = 1  # Long position
+        signals[local_maxima] = -1  # Short position
+
+        # Forward fill the signals to maintain positions
+        signals.ffill(inplace=True)
+
+        return signals
 
 if __name__ == '__main__':
     # get crude oil prices

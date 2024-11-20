@@ -58,6 +58,12 @@ def update_paper_portfolio(screen_df:pd.DataFrame):
             logger.debug(f"Removing {symbol} from the portfolio")
             portfolio.close_positions([symbol])
             logger.debug(f"Clearing Order submitted for {symbol}")
+    
+    # log new stocks to be added to the portfolio
+    for symbol in new_qty.keys():
+        if symbol not in current_qty.keys():
+            # now adding positions to be added to the portfolio
+            logger.debug(f"New Stock: Adding {symbol} to the portfolio")
 
     logger.debug(f"Amount to change in qty to acheive new Portfolio: {amount_change}")
     # get limit price for each stock

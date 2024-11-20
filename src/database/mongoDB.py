@@ -36,3 +36,10 @@ class MongoDB:
         db = self.client[self.maps['macrotrends']['database']]
         collection = db[self.maps['macrotrends']['collection']]
         collection.insert_one(data)
+    
+    def get_macrotrends_data(self,stock_url):
+        db = self.client[self.maps['macrotrends']['database']]
+        collection = db[self.maps['macrotrends']['collection']]
+        data = collection.find_one({"url":stock_url})
+        return data
+    

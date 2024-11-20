@@ -26,4 +26,6 @@ settings = {
     "COINBASE_API_KEY": getenv("COINBASE_API_KEY"),
     "COINBASE_SECRET_KEY": getenv("COINBASE_SECRET_KEY"),
     "MONGO_URI": getenv("MONGO_URI"),
+    "COSMOS_URI": getenv("COSMOS_URI"),
+    "COSMOS_KEY": getenv("COSMOS_KEY"),
 }

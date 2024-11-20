@@ -5,6 +5,7 @@ from pypfopt import objective_functions,expected_returns,HRPOpt
 import yfinance as yf
 from datetime import date,timedelta
 from pypfopt.discrete_allocation import DiscreteAllocation, get_latest_prices
+from loguru import logger
 
 class Optimizer:
     def __init__(self,tickers:list,type="HRP",start = date.today() - timedelta(days=1000),end = date.today()):
@@ -12,7 +13,14 @@ class Optimizer:
             raise ValueError("Invalid type")
         
         self.tickers = tickers
-        self.data = yf.download(tickers, start=start, end=end)['Adj Close']
+        # download the Adj Close price one by one
+        self.data = pd.DataFrame()
+        for ticker in tickers:
+            try:
+                self.data[ticker] = yf.download(ticker, start=start, end=end)['Adj Close']
+            except Exception as e:
+                logger.error(f"Error downloading {ticker}: {e}")
+                continue
         self.mu = mean_historical_return(self.data)
         self.S = CovarianceShrinkage(self.data).ledoit_wolf()
         self.historical_returns = expected_returns.returns_from_prices(self.data)

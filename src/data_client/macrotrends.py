@@ -32,6 +32,10 @@ class MacrotrendsClient:
         # update the session with the cookies
         cj = browser_cookie3.chrome()
         self.session.cookies = cj
+        # set timout to 10 seconds
+        self.session.timeout = 10
+        # set the max retries to 3
+        self.session.max_retries = 3
 
     def get_financial_ratios(self, ticker):
         logger.info("Getting Financial Ratios")

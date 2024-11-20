@@ -25,12 +25,12 @@ class ScreenerIn:  # for Indian stocks
     def get_data(self):
         return {
             "company_info": self.get_company_info(),
-            "quaterly_results": self.get_quaterly_results(),
+            "income_statement": self.get_quaterly_results(),
             "peers": self.get_peers(),
             "profit_loss": self.get_profit_loss(),
             "balance_sheet": self.get_balance_sheet(),
             "cash_flow": self.get_cash_flow(),
-            "ratios": self.get_ratios(),
+            "financial_ratios": self.get_ratios(),
             "shareholders": self.get_shareholders()
         }
 

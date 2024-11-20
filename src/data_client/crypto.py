@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime,timedelta
 from loguru import logger
+
 class CoinbaseCrypto:
     def __init__(self, api_key, api_secret):
         self.client = RESTClient(api_key, api_secret)
@@ -21,7 +22,7 @@ class CoinbaseCrypto:
     def get_all_products(self,**kwargs):
         return self.client.get_products(**kwargs)
     
-    def get_market_data(self, product_id, granularity:str = "ONE_MINUTE", start:datetime = datetime.now() - timedelta(days=7), end=datetime.now()):
+    def get_market_data(self, product_id, granularity:str = "FIVE_MINUTE", start:datetime = datetime.now() - timedelta(days=7), end=datetime.now()):
         if granularity not in self.valid_granularity:
             raise ValueError(f"Invalid granularity. Valid values are {self.valid_granularity}")
         # convert datetime to UNIX timestamps
@@ -36,7 +37,7 @@ class CoinbaseCrypto:
             if curr_end > end:
                 curr_end = end
             logger.debug(f"Fetching data from {datetime.fromtimestamp(int(start))} to {datetime.fromtimestamp(int(curr_end))}")
-            temp = self.client.get_candles("BTC-USD",str(start),str(curr_end),granularity="FIVE_MINUTE")
+            temp = self.client.get_candles(product_id,str(start),str(curr_end),granularity=granularity)
             data['candles'].extend(temp.get("candles",[]))
             start = curr_end
         return pd.json_normalize(data['candles'])

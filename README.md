@@ -18,7 +18,7 @@ poetry run python -m exp.screener  # get screened stocks from SeekingAlpha
 
 
 ## Reading
-
+- A HIDDEN MARKOV MODEL FOR STATISTICAL ARBITRAGE IN INTERNATIONAL CRUDE OIL FUTURES MARKETS
 - A Multimodal Foundation Agent for Financial Trading: Tool-Augmented, Diversified, and Generalist
 - Pairs trading with a mean-reverting jump-diffusion model on high-frequency data
 - Stock Market Prediction Using Hidden Markov Models
@@ -39,6 +39,7 @@ poetry run python -m exp.screener  # get screened stocks from SeekingAlpha
 - Slow Momentum with Fast Reversion: A Trading Strategy Using Deep Learning and Changepoint Detection
 - FEW-SHOT LEARNING PATTERNS IN FINANCIAL TIME-SERIES FOR TREND-FOLLOWING STRATEGIES
 - Trading with the Momentum Transformer: An Intelligent and Interpretable Architecture
+- DeepLOB: Deep Convolutional Neural Networks for Limit Order Bookshttps://arxiv.org/pdf/1808.03668
 
 ## Data Sources
 
@@ -99,6 +100,34 @@ Data Sources currently Supporting:
    - Form 4 - Insiders, or those related to insiders, must file Form 4 when they actually sell the restricted stock. Form 4 is filed within two business days of the transaction. 
 
 - Perform Intraday time series analysis on the next trading day. The assumption is the stocks which show rapid change in the market sentiments due to the reuslts from the fillings might showcase similar patterns of trading. Check whether there is any significant implications of the Report to volatility of stock price post the report release and also is there any difference based on the market sentiment of the stock.
+
+# My vague ideas
+- Mean Reversion for Crypto AI coins and coins with lot of recent trend
+
+- Label financial data in a unique way to only extract trades we want to take. Might wanna think which kind of trade we want to take?
+
+- This is a volatility trading strategy. Buying the straddle when implied vol is subsided, at the hope that it will spike in the near future. At the same time, we delta hedge our portfolio to remove the affect of underlying movement on portfolio.
+
+
+
+### David Pauls Insipiration
+
+- Find Obvicious Stop Losses in the Market and use them as entry points
+
+### kids strat
+- find some bias in higher time frame
+- drop into lower time frame, look for SMT divergence and inverse fair value retrace it and thats the entry
+- Target some resting liquidity
+
+### Crypto
+- https://github.com/mkajnar/DailyBuyStrategy/tree/main
+- https://github.com/picasso999/FreqtradeStrategies/tree/master
+- https://imbuedeskpicasso.medium.com/hyper-optimized-algorithmic-strategy-vs-machine-learning-models-part-2-hidden-markov-model-98e4894e3d9e
+- https://medium.com/@redsword_23261/rsi-macd-bollinger-bands-and-volume-based-hybrid-trading-strategy-fb1ecfd58e1b#:~:text=The%20strategy%20combines%20multiple%20technical%20indicators%20such%20as%20RSI%2C%20MACD,zone%20to%20optimize%20trading%20signals.
+- https://freedium.cfd/https://imbuedeskpicasso.medium.com/unlocking-152-293-returns-on-eth-did-neural-networks-overcome-overfitting-with-a-tcn-model-9b8322e577bb
+- https://imbuedeskpicasso.medium.com/the-8787-roi-algo-strategy-unveiled-for-crypto-futures-22a5dd88c4a5
+- https://github.com/fifikobayashi/Flash-Arb-Trader
+- https://github.com/picasso999/Strategies/tree/main
 
 
 ### Momentum Based Portfolio:
