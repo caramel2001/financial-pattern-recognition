@@ -6,6 +6,7 @@ import yfinance as yf
 from datetime import date,timedelta
 from pypfopt.discrete_allocation import DiscreteAllocation, get_latest_prices
 from loguru import logger
+import pandas as pd
 
 class Optimizer:
     def __init__(self,tickers:list,type="HRP",start = date.today() - timedelta(days=1000),end = date.today()):
