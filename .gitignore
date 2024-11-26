@@ -14,3 +14,4 @@ user_data/
 tradesv3.dryrun.sqlite
 tradesv3.dryrun.sqlite-shm
 tradesv3.dryrun.sqlite-wal
+*.csv

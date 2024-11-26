@@ -18,7 +18,7 @@ class Optimizer:
         self.data = pd.DataFrame()
         for ticker in tickers:
             try:
-                self.data[ticker] = yf.download(ticker, start=start, end=end)['Adj Close']
+                self.data[ticker] = yf.download([ticker], start=start, end=end)['Adj Close']
             except Exception as e:
                 logger.error(f"Error downloading {ticker}: {e}")
                 continue
@@ -39,8 +39,11 @@ class Optimizer:
         
         self.opt.portfolio_performance(verbose=True)
         latest_prices = get_latest_prices(self.data)
+        latest_prices.sort_index(inplace=True)
+        logger.debug(latest_prices)
+        logger.debug(weights)
         da = DiscreteAllocation(weights, latest_prices, total_portfolio_value=port_val)
         
-        return da.lp_portfolio()
+        return da.greedy_portfolio()
 
 

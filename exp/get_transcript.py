@@ -3,7 +3,7 @@ from datetime import datetime,timedelta,date
 import json
 import yfinance as yf
 from loguru import logger
-from src.database.mongoDB import MongoDB
+from src.database.azure_cosmos import CosmosDB
 
 def get_estimates(symbol):
     ticker = yf.Ticker(symbol)
@@ -23,7 +23,7 @@ def get_estimates(symbol):
     return revenue_estimate,eps_estimate
 
 if __name__ == "__main__":
-    mongo_client = MongoDB()
+    db_client = CosmosDB()
 
     scraper = MotleyFoolEarningsTranscript()
     date = datetime.now() - timedelta(days=1)
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     #     json.dump(transcripts,f)
 
     # store the transcripts in mongoDB
-    mongo_client.store_transcripts(transcripts)
+    db_client.store_transcripts(transcripts)
 
     # seeking = SeekingAlpha()
     # data = seeking.get_transcripts()

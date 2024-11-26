@@ -81,6 +81,7 @@ Data Sources currently Supporting:
 
 ## Ideas
 
+- https://chatgpt.com/c/672f9e1d-d0b0-800c-9a35-467cc88754de - 0DTE options
 ### Chan Strats
 - Buy on Gap Model for Nifty Index, NIFTYBANK INDEX, MIDCAP INDEX
 - Short on Gap Model for Indexes

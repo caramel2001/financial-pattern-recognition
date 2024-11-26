@@ -50,7 +50,13 @@ class Seasonal:
             reference = 12
         elif period=="H":
             data['period'] = data.index.hour
-            reference = 7
+            reference = 0
+        elif period =="30m":
+            data['period'] = (data.index.minute//30)/2 + (data.index.hour)
+            reference = 0
+        elif period=='15m':
+            data['period'] = (data.index.minute//15)/4 + (data.index.hour)
+            reference = 0
         elif period=='W':
             data['period'] = data.index.isocalendar().week
             reference = 52
@@ -194,6 +200,29 @@ class Seasonal:
         # fig.tight_layout()
         fig.align_ylabels(axes)
         plt.show()
+
+    def find_entries(self,coeffs, k,short=True):
+        """
+        Give the coefficients of the variance analysis and the number of periods to hold the position
+        returns the index of the first entry and the index of the exit.
+        """
+        if not coeffs or k <= 0:
+            return -1
+
+        n = len(coeffs)
+        max_diff = float('-inf')
+        start_index = -1
+        end_index = -1
+
+        for i in range(n):
+            for j in range(i + 1, min(i + k, n)):
+                diff = coeffs[i] - coeffs[j] if short else coeffs[j] - coeffs[i]
+                if diff > max_diff:
+                    max_diff = diff
+                    start_index = i
+                    end_index = j
+
+        return start_index,end_index
 
 def SeasonalStrategy():
     """Seasonal Strategy"""

@@ -42,6 +42,10 @@ torchvision = "^0.19.1"
 torchaudio = "^2.4.1"
 scipy = "1.10.1"
 azure-cosmos = "^4.7.0"
+mplfinance = "^0.12.10b0"
+markdownify = "^0.13.1"
+autogen-agentchat = {extras = ["websurfer"], version = "^0.2.38"}
+flaml = {extras = ["automl"], version = "^2.3.2"}
 
 
 [build-system]

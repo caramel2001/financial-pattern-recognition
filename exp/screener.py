@@ -65,6 +65,8 @@ def update_paper_portfolio(screen_df:pd.DataFrame):
             # now adding positions to be added to the portfolio
             logger.debug(f"New Stock: Adding {symbol} to the portfolio")
 
+    # sort the values in the amount change dictionary
+    amount_change = {k: v for k, v in sorted(amount_change.items(), key=lambda item: item[1])}
     logger.debug(f"Amount to change in qty to acheive new Portfolio: {amount_change}")
     # get limit price for each stock
     # logger.debug("Getting limit price for each stock")
@@ -76,8 +78,8 @@ def update_paper_portfolio(screen_df:pd.DataFrame):
     #      #print(i)
     #      limit_prices[i] = get_limit_price(j)
     # submit orders
-    for i in range(len(screen_df)):
-        symbol = screen_df['attributes.name'].iloc[i]
+    for symbol in amount_change.keys():
+        # symbol = screen_df['attributes.name'].iloc[i]
         # limit_price = round(limit_prices[symbol],2)
         qty = amount_change[symbol]
         if qty == 0:
