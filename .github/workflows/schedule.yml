@@ -35,6 +35,8 @@ jobs:
       - name: Create .env file
         run: |
           echo "MONGO_URI=${{ secrets.MONGO_URI }}" > .env
+          echo "COSMOS_URI=${{ secrets.COSMOS_URI }}" >> .env
+          echo "COSMOS_KEY=${{ secrets.COSMOS_KEY }}" >> .env
 
       - name: Run Python script
         run: poetry run python -m exp.get_transcript
