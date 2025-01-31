@@ -18,7 +18,7 @@ class Optimizer:
         self.data = pd.DataFrame()
         for ticker in tickers:
             try:
-                self.data[ticker] = yf.download([ticker], start=start, end=end)['Adj Close']
+                self.data[ticker] = yf.download([ticker], start=start, end=end)['Close']
             except Exception as e:
                 logger.error(f"Error downloading {ticker}: {e}")
                 continue
