@@ -17,7 +17,6 @@ matplotlib = "^3.9.2"
 tqdm = "^4.66.5"
 yfinance = "^0.2.41"
 scikit-learn = "^1.5.1"
-hmmlearn = "^0.3.2"
 websocket-client = "1.6.1"
 aiohttp = "3.9.3"
 asyncio = "3.4.3"
@@ -44,7 +43,6 @@ scipy = "1.10.1"
 azure-cosmos = "^4.7.0"
 mplfinance = "^0.12.10b0"
 markdownify = "^0.13.1"
-autogen-agentchat = {extras = ["websurfer"], version = "^0.2.38"}
 flaml = {extras = ["automl"], version = "^2.3.2"}
 python-binance = "^1.0.27"
 
