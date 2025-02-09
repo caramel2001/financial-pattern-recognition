@@ -1,5 +1,6 @@
 import requests
 import pandas as pd
+from loguru import logger
 
 class SeekingAlpha:
     def __init__(self):
@@ -24,7 +25,8 @@ class SeekingAlpha:
 
         response = requests.post(url, json=params,headers={'Content-Type': 'application/json','User-Agent':'Mozilla/5.0'})
         screen_stocks = response.json()
-
+        logger.debug("Seeking Alpha Screen response status code: " + str(response.status_code))
+        logger.debug("Seeking Alpha Screen response: " + str(screen_stocks))
         screen_df = pd.json_normalize(screen_stocks['data'])
         screen_df.set_index('id',inplace=True)
 
