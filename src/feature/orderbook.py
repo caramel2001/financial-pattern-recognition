@@ -14,6 +14,7 @@ import ccxt
 from ccxt import Exchange
 from ccxt.binance import binance
 from ccxt.coinbaseadvanced import coinbaseadvanced
+from ccxt.bybit import bybit
 from src.utils.config import settings
 from loguru import logger
 
@@ -40,7 +41,6 @@ class CryptoOrderbook:
         try:
             print(fetch_ob_params)
             ob = exchange.fetch_order_book(symbol=symbol, params=fetch_ob_params)
-            print(ob)
             is_valid = True
             if 'timestamp' in ob and ob['timestamp']:
                 update_ts_ms = ob['timestamp']
@@ -235,19 +235,41 @@ class CryptoOrderbook:
 if __name__ == '__main__':
     client = CryptoOrderbook()
     # Define necessary parameters
-    symbol = "SOL/USDT"
+    coinbase_symbol = "SOL-PERP-INTX"
     depth = 10000
     param = {
         "limit": depth,
-        "symbol": symbol,
+        "symbol": coinbase_symbol,
     }
     exchange = coinbaseadvanced({
         'defaultType' : "swap",
     })
-    orderbooks = client._fetch_orderbook(symbol=symbol, exchange=exchange,fetch_ob_params=param)
+    coinbase_orderbooks = client._fetch_orderbook(symbol=coinbase_symbol, exchange=exchange,fetch_ob_params=param)
+    # getting binance orderbooks
+    binance_symbol = "SOLUSDT"
+    depth = 10000
+    param = {
+        "limit": depth,
+        "symbol": binance_symbol,
+    }
+    binance = binance({
+        'defaultType' : "swap",
+    })
+    binance_orderbooks = client._fetch_orderbook(symbol=binance_symbol, exchange=binance,fetch_ob_params=param)
+    bybit_symbol = "SOLUSDT"
+    depth = 10000
+    param = {
+        "limit": depth,
+        "symbol": bybit_symbol,
+    }
+    bybit = bybit({
+        'defaultType' : "swap",
+    })
+    bybit_orderbooks = client._fetch_orderbook(symbol=bybit_symbol, exchange=bybit,fetch_ob_params=param)
     # Process the order books
-    pd_aggregated_orderbooks_asks, pd_aggregated_orderbooks_bids = client.post_process_orderbook([orderbooks], price_level_increment=0.5)
+    pd_aggregated_orderbooks_asks, pd_aggregated_orderbooks_bids,orderbook_features = client.post_process_orderbook([coinbase_orderbooks,binance_orderbooks], price_level_increment=1)
+    print(orderbook_features)
     # Plot the order imbalance
-    client.plot_orderbook(pd_aggregated_orderbooks_asks, pd_aggregated_orderbooks_bids)
+    client.plot_orderbook(pd_aggregated_orderbooks_asks, pd_aggregated_orderbooks_bids,nrows = 40)
 
     

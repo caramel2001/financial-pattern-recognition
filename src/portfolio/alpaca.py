@@ -2,7 +2,7 @@ from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest,LimitOrderRequest,GetOrdersRequest,GetAssetsRequest
 from alpaca.trading.enums import OrderSide, TimeInForce,QueryOrderStatus,AssetClass,AssetStatus
 from alpaca.trading.stream import TradingStream
-
+from src.utils.config import settings
 # set environment variables
 #APCA_API_BASE_URL = https://paper-api.alpaca.markets
 
@@ -85,3 +85,30 @@ class PaperFolio:
         trading_stream.subscribe_trade_updates(update_handler)
         # start our websocket streaming
         trading_stream.run()
+
+if __name__ == "__main__":
+    # pf = PaperFolio(settings.alpaca_api_key,settings.alpaca_secret_key)
+    # # get Portfolio history
+    # pf.account.history()
+
+    import requests
+    # start is a datetime object from 6th September 2024
+    import datetime
+    start = datetime.datetime(2024, 9, 4)
+    # convert start to strin is similar format 2021-03-16T18:38:01Z
+    start = start.strftime("%Y-%m-%dT%H:%M:%SZ")
+    end = datetime.datetime.now()
+    end = end.strftime("%Y-%m-%dT%H:%M:%SZ")
+    url = f"https://paper-api.alpaca.markets/v2/account/portfolio/history?timeframe=1D&intraday_reporting=market_hours&pnl_reset=per_day&start={start}&end={end}"   
+
+    headers = {
+        "accept": "application/json",
+        "APCA-API-KEY-ID": settings['ALPACA_API_KEY'], 
+        "APCA-API-SECRET-KEY": settings['ALPACA_SECRET_KEY']
+    }
+
+    response = requests.get(url, headers=headers)
+    import pandas as pd
+    df = pd.DataFrame(response.json())
+    df['timestamp'] = pd.to_datetime(df['timestamp'], unit='s')
+    print(df.to_markdown())

@@ -30,6 +30,41 @@ class OverbarFeature:
         - kama_diff
         """
         pass
+    
+    def adhoc_features(self):
+        """
+        - return_1day
+        - return_7days
+        - return_14days
+        - return_30days
+        - return_60days
+        - RSI(2,30) PCA(https://www.youtube.com/watch?v=mdncZ034Q7k&ab_channel=neurotrader)
+        """
+        # RSI (2,30)
+
+    def rsi_pca(self,windows:tuple = (2,30)):
+        pass
+
+    
+    def volume_features(self):
+        """
+        - volume_1day
+        - volume_7days
+        - volume_14days
+        - volume_30days
+        - volume_60days
+        - volume_90days
+        - volume_180days
+        - volume_365days
+        """
+        pass
+
+    def ml_features(self):
+        """
+        - hmm_state_signal
+        - hmm_volatility_state_signal
+        """
+        pass
 
 class Alpha158:
     def __init__(self, data: pd.DataFrame, basic: bool = False, windows : list = [5, 10, 20, 30, 60]):
@@ -42,7 +77,7 @@ class Alpha158:
         df["zopen"] = df["open"] / df["close"] - 1
         df["zhigh"] = df["high"] / df["close"] - 1
         df["zlow"] = df["low"] / df["close"] - 1
-        df["zadjcp"] = df["adjclose"] / df["close"] - 1
+        # df["zadjcp"] = df["adjclose"] / df["close"] - 1
         df["zclose"] = (df.close /(df.close.rolling(2).sum() - df.close)) - 1
         df["zd_5"] = (df.close.rolling(5).sum() /5) / df.close - 1
         df["zd_10"] = (df.close.rolling(10).sum() /10) / df.close - 1

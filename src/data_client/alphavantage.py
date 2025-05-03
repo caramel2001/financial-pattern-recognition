@@ -5,7 +5,8 @@ import datetime
 from tqdm import tqdm
 from src.utils.config import settings
 from dateutil.relativedelta import relativedelta
-
+from typing import Optional
+from io import StringIO
 
 def get_last_n_months(n):
     current_date = datetime.datetime.now()
@@ -157,16 +158,31 @@ class AlphaVantage:
         data = response.json()
         return data
 
+    def get_us_ticker_list(self,date: Optional[datetime.datetime] = None, active: bool = True):
+        # https://www.alphavantage.co/query?function=LISTING_STATUS&date=2014-07-10&state=delisted&apikey=demo
+        # the API returns a CSV file
+        params = {
+            "function": "LISTING_STATUS",
+            "date" : date.strftime("%Y-%m-%d") if date is not None else datetime.datetime.now().strftime("%Y-%m-%d"),
+            "state" : "active" if active else "delisted"
+        }
+        response = self.make_request(params=params)
+        decoded_content = response.content.decode('utf-8')
+        data = pd.read_csv(StringIO(decoded_content))
+        return data
+
 if __name__ == '__main__':
     av = AlphaVantage()
-    print("Intraday")
-    data = av.get_intraday("AAPL", "5min")
-    #print(data.head())
-    print(data.shape)
-    print("Extended Intraday")
-    data = av.get_extended_intraday("AAPL", "5min", 2)
-    print(data.shape)
-    print("News Sentiment")
-    news = av.get_news_sentiment("AAPL")
-    print(news)
-
+    # print("Intraday")
+    # data = av.get_intraday("AAPL", "5min")
+    # #print(data.head())
+    # print(data.shape)
+    # print("Extended Intraday")
+    # data = av.get_extended_intraday("AAPL", "5min", 2)
+    # print(data.shape)
+    # print("News Sentiment")
+    # news = av.get_news_sentiment("AAPL")
+    # print(news)
+    print("Delisted US Ticker List")
+    data = av.get_us_ticker_list(active=False)
+    print(data)
