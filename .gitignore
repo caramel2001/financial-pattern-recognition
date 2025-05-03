@@ -17,3 +17,9 @@ tradesv3.dryrun.sqlite-wal
 *.csv
 strategies/
 GeneTrader/
+exp/strategy/bollinger_band.py
+exp/.cache/41/cache.db
+exp/sg_car.ipynb
+exp/sol_agent.ipynb
+exp/strategy/ai_coin.ipynb
+exp/strategy/rsi_macd_boll.py

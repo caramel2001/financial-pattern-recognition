@@ -40,7 +40,11 @@ poetry run python -m exp.screener  # get screened stocks from SeekingAlpha
 - FEW-SHOT LEARNING PATTERNS IN FINANCIAL TIME-SERIES FOR TREND-FOLLOWING STRATEGIES
 - Trading with the Momentum Transformer: An Intelligent and Interpretable Architecture
 - DeepLOB: Deep Convolutional Neural Networks for Limit Order Bookshttps://arxiv.org/pdf/1808.03668
+- https://research.google/blog/autobnn-probabilistic-time-series-forecasting-with-compositional-bayesian-neural-networks/
 
+## Quantopian
+- https://www.quantitativo.com/p/intraday-momentum-for-es-and-nq?utm_source=substack&utm_medium=web&utm_content=embedded-post&triedRedirect=true
+- https://www.quantitativo.com/p/machine-learning-and-the-probability
 ## Data Sources
 
 **Please help find any data source you guys are able to find for any kind of financial data useful.** 
