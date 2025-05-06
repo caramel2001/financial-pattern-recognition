@@ -1,0 +1,56 @@
+name: Barchart Scraper
+
+on:
+  schedule:
+    - cron: '30 13 * * 1-5'
+    - cron: '0 14 * * 1-5'
+    - cron: '30 14 * * 1-5'
+    - cron: '0 15 * * 1-5'
+    - cron: '30 15 * * 1-5'
+    - cron: '0 16 * * 1-5'
+    - cron: '30 16 * * 1-5'
+    - cron: '0 17 * * 1-5'
+    - cron: '30 17 * * 1-5'
+    - cron: '0 18 * * 1-5'
+    - cron: '30 18 * * 1-5'
+    - cron: '0 19 * * 1-5'
+    - cron: '30 19 * * 1-5'
+    - cron: '0 20 * * 1-5'
+
+jobs:
+  run_barchart_scraper:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9.15'
+
+      - name: Cache Poetry dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry
+          key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "PATH=$HOME/.local/bin:$PATH" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-ansi
+
+      - name: Create .env file
+        run: |
+          echo "MONGO_URI=${{ secrets.MONGO_URI }}" > .env
+          echo "COSMOS_URI=${{ secrets.COSMOS_URI }}" >> .env
+          echo "COSMOS_KEY=${{ secrets.COSMOS_KEY }}" >> .env
+
+      - name: Run Barchart scrape script
+        run: poetry run python -m exp.barchart_scrape
