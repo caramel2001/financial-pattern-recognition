@@ -45,6 +45,9 @@ poetry run python -m exp.screener  # get screened stocks from SeekingAlpha
 ## Quantopian
 - https://www.quantitativo.com/p/intraday-momentum-for-es-and-nq?utm_source=substack&utm_medium=web&utm_content=embedded-post&triedRedirect=true
 - https://www.quantitativo.com/p/machine-learning-and-the-probability
+- https://www.quantitativo.com/p/learning-to-rank
+- https://community.quantopian.com/c/community-forums/fast-trend-following
+
 ## Data Sources
 
 **Please help find any data source you guys are able to find for any kind of financial data useful.** 
