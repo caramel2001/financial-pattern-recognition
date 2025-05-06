@@ -22,6 +22,16 @@ class CosmosDB:
                 "database": "FinancialData",
                 "collection": "Macrotrends",
                 "partition_key": "/updated_at"  # Define a partition key for Cosmos DB collections
+            },
+            "barchart": {
+                "database": "FinancialData",
+                "collection": "barchart",
+                "partition_key": "/id"  # Define a partition key for Cosmos DB collections
+            },
+            "barchart-implied-move": {
+                "database": "FinancialData",
+                "collection": "barchart-implied-move",
+                "partition_key": "/id"  # Define a partition key for Cosmos DB collections
             }
         }
 
@@ -29,7 +39,7 @@ class CosmosDB:
         try:
             return self.client.get_database_client(db_name)
         except exceptions.CosmosResourceNotFoundError:
-            return self.client.create_database(db_name)
+            return None
 
     def get_collection(self, db_name, collection_name, partition_key):
         db = self.get_database(db_name)
@@ -60,4 +70,5 @@ class CosmosDB:
         if 'id' not in data:
             data['id'] = data['url'].replace("/","-")  # Use the URL as the unique identifier
         collection.upsert_item(data)
+        
 

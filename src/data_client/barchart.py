@@ -4,6 +4,8 @@ import asyncio
 from playwright.async_api import async_playwright
 from datetime import datetime, timedelta
 import pandas as pd
+from loguru import logger
+
 
 class BarchartAPI:
     BASE_URL = "https://www.barchart.com/proxies/core-api/v1"
@@ -41,6 +43,24 @@ class BarchartAPI:
         self.xsrf_token = urllib.parse.unquote(self.cookies.get('XSRF-TOKEN', ''))
         self.session.cookies.update(self.cookies)
         self.session.headers["x-xsrf-token"] = self.xsrf_token
+
+    def request_cookies(self):
+        url = "https://www.barchart.com"
+        headers = self.HEADERS
+        response = requests.get(url, headers=headers)
+        cookies={}
+        for cookie in response.cookies:
+            # print(cookie.name)
+            if cookie.name == "laravel_token":
+                cookies[cookie.name] = cookie.value
+            if cookie.name == "XSRF-TOKEN": 
+                cookies[cookie.name] = cookie.value
+        self.cookies = cookies
+        self.xsrf_token = urllib.parse.unquote(self.cookies.get('XSRF-TOKEN', ''))
+        logger.info(self.cookies)
+        self.session.cookies.update(self.cookies)
+        self.session.headers["x-xsrf-token"] = self.xsrf_token
+
 
     def get_quote(self, symbol="$SPX"):
         endpoint = f"{self.BASE_URL}/quotes/get"

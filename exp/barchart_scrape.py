@@ -31,7 +31,8 @@ async def main():
     logger.info(f"Scraping data for {symbol}")
     api = BarchartAPI()
     logger.info("Fetching cookies")
-    await api.fetch_cookies()
+    # await api.fetch_cookies()
+    api.request_cookies()
 
     db_client = CosmosDB()
 
