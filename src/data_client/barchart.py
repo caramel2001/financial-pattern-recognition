@@ -126,7 +126,7 @@ class BarchartAPI:
         ]
         params = {
             "symbols": symbol,
-            "raw": 1,
+            "raw": 0,
             "fields": ",".join(fields),
             "groupBy": "strikePrice",
             "le(nearestToLast)": "40"
@@ -141,7 +141,7 @@ class BarchartAPI:
         params = {
             "symbols": symbol,
             "fields": "expirationDate,expirationType,baseUpperPrice,baseLowerPrice,impliedMove,impliedMovePercent",
-            "raw": "true"
+            "raw": "0"
         }
         return self.session.get(endpoint, params=params).json()
 
