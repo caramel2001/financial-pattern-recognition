@@ -1,8 +1,7 @@
 import requests
 import urllib.parse
-import asyncio
 from playwright.async_api import async_playwright
-from datetime import datetime, timedelta
+from datetime import datetime
 import pandas as pd
 from loguru import logger
 
