@@ -16,7 +16,7 @@ on:
     - cron: '0 19 * * 1-5'
     - cron: '30 19 * * 1-5'
     - cron: '0 20 * * 1-5'
-workflow_dispatch:
+  workflow_dispatch:
 jobs:
   run_barchart_scraper:
     runs-on: ubuntu-latest
