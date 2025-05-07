@@ -44,8 +44,8 @@ jobs:
           echo "PATH=$HOME/.local/bin:$PATH" >> $GITHUB_ENV
 
       - name: Install dependencies
-        run: poetry install --no-interaction --no-ansi
-
+        run: poetry install --no-root --no-interaction --no-ansi
+        
       - name: Create .env file
         run: |
           echo "MONGO_URI=${{ secrets.MONGO_URI }}" > .env
