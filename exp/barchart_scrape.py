@@ -1,6 +1,3 @@
-from math import log
-
-from pyarrow import chunked_array
 from src.data_client.barchart import BarchartAPI
 from src.database.azure_cosmos import CosmosDB
 from datetime import datetime
