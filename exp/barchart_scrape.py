@@ -1,9 +1,14 @@
+import sys
+import os
+# get current file path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.data_client.barchart import BarchartAPI
 from src.database.azure_cosmos import CosmosDB
 from datetime import datetime
 import asyncio
 from loguru import logger
-
+log_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "logs", "barchart.log")
+logger.add(log_file, rotation="10 MB", encoding="utf8")
 
 def chunk_gamma_by_strike(gamma_data, datetime,symbol="$SPX"):
     """

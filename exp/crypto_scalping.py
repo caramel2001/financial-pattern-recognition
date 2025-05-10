@@ -1,16 +1,14 @@
 from datetime import datetime
 from datetime import datetime, timedelta
 import sys
-sys.path.append("/Users/pratham/Desktop/2024projects/PatternRecognition")
-
+import os
+# get current file path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from binance.client import Client
 import joblib
-import pandas as pd
 import pandas as pd
 import pandas_ta as ta
 from tqdm import tqdm
-import joblib
-from binance.client import Client
 from apscheduler.schedulers.blocking import BlockingScheduler
 import requests
 from src.feature.overbar import Alpha158
@@ -19,8 +17,7 @@ import asyncio
 # save all loguru logs to a file
 from loguru import logger
 
-log_file = "/Users/pratham/Desktop/2024projects/PatternRecognition/logs/strategy.log"
-
+log_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "logs", "strategy.log")
 logger.add(log_file, rotation="10 MB", encoding="utf8")
 tqdm.pandas()
 
@@ -48,8 +45,8 @@ def get_processed_data(symbol, interval, limit=60):
     df.reset_index(inplace=True)
     alpha = Alpha158(df,basic=True)
     df = alpha.alpha158()
-    model_path = '/Users/pratham/Desktop/2024projects/PatternRecognition/user_data/models/best_decision_tree_model_5.pkl'
-    scaler_path = "/Users/pratham/Desktop/2024projects/PatternRecognition/user_data/models/best_decision_tree_model_5_scaler.pkl"
+    model_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "models", "best_decision_tree_model_5.pkl")
+    scaler_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "models", "best_decision_tree_model_5_scaler.pkl")
     model = joblib.load(model_path)
     scaler = joblib.load(scaler_path)
     X = df.drop(["date"],axis=1)
@@ -153,18 +150,19 @@ def trading_job():
         logger.debug(f"No signal detected at {datetime.now()}")
 
     # write new signal in a csv file
-    df.iloc[-1:].to_csv(f'/Users/pratham/Desktop/2024projects/PatternRecognition/logs/MLScalping.csv', mode='a', header=False)
+    print(f'{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}\logs\MLScalping.csv')
+    df.iloc[-1:].to_csv(f'{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}\logs\MLScalping.csv', mode='a', header=False)
 # Schedule the job to run every 5 minutes using a cron expression
-scheduler = BlockingScheduler()
-scheduler.add_job(
-    trading_job,
-    'cron',
-    hour='0-23',
-    minute='1,6,11,16,21,26,31,36,41,46,51,56',
-    start_date='2025-04-16 12:00:00',
-    misfire_grace_time=60
-)
+# scheduler = BlockingScheduler()
+# scheduler.add_job(
+#     trading_job,
+#     'cron',
+#     hour='0-23',
+#     minute='1,6,11,16,21,26,31,36,41,46,51,56',
+#     start_date='2025-04-16 12:00:00',
+#     misfire_grace_time=60
+# )
 
-print("Starting scheduler...")
-scheduler.start()
-# trading_job()
+# print("Starting scheduler...")
+# scheduler.start()
+trading_job()
