@@ -4,6 +4,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.data_client.barchart import BarchartAPI
 from src.database.azure_cosmos import CosmosDB
+from src.database.mongoDB import LocalMongoDB
 from datetime import datetime
 import asyncio
 from loguru import logger
@@ -36,7 +37,7 @@ async def main():
     # await api.fetch_cookies()
     api.request_cookies()
 
-    db_client = CosmosDB()
+    db_client = LocalMongoDB()
 
     curr_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     logger.info(f"Fetching data from Barchart at {curr_time}")
@@ -54,24 +55,26 @@ async def main():
     expirations['datetime'] = curr_time
     
 
-    # store expiration implied move data in cosmosDB
-    db_name = db_client.maps['barchart-implied-move']['database']
-    collection_name = db_client.maps['barchart-implied-move']['collection']
-    partition_key = db_client.maps['barchart-implied-move']['partition_key']
-    collection = db_client.get_collection(db_name, collection_name, partition_key)
+    # store expiration implied move data in mongoDB
+    db_name = db_client.maps['barchartImpliedMove']['database']
+    collection_name = db_client.maps['barchartImpliedMove']['collection']
+    collection = db_client.get_collection(db_name, collection_name)
     expirations['id'] = f"{symbol}-{curr_time}"
-    collection.upsert_item(expirations)
+    expirations['datetime'] = curr_time
+    expirations['symbol'] = symbol
+    collection.insert_one(expirations)
 
     chunked_gamma_data = chunk_gamma_by_strike(gamma_exposure['data'], curr_time, symbol)
-    # store gamma exposure data in cosmosDB
-    logger.info("Storing data in cosmosDB")
-    db_name = db_client.maps['barchart']['database']
-    collection_name = db_client.maps['barchart']['collection']
-    partition_key = db_client.maps['barchart']['partition_key']
-    collection = db_client.get_collection(db_name, collection_name, partition_key)
+    # store gamma exposure data in mongoDB
+    logger.info("Storing data in mongoDB")
+    db_name = db_client.maps['barchartGamma']['database']
+    collection_name = db_client.maps['barchartGamma']['collection']
+    collection = db_client.get_collection(db_name, collection_name)
+    gamma_exposure['datetime'] = curr_time
+    gamma_exposure['symbol'] = symbol
     gamma_exposure['id'] = f"{symbol}-{curr_time}"
     for chunk in chunked_gamma_data:
-        collection.upsert_item(chunk)
+        collection.insert_one(chunk)
 
 if __name__ == "__main__":
     asyncio.run(main())
