@@ -6,6 +6,29 @@ import pandas as pd
 from tqdm import tqdm
 
 
+class LocalMongoDB:
+    def __init__(self):
+        # Connect to the local MongoDB server
+        self.client = MongoClient(settings['LOCAL_MONGO_URI'], serverSelectionTimeoutMS=5000)
+        self.maps = {
+            "barchartGamma":{
+                "database": "FinancialData",
+                "collection": "BarchartGamma"
+            },
+            "barchartImpliedMove":{
+                "database": "FinancialData",
+                "collection": "BarchartImpliedMove"
+            }
+        }
+    def get_db(self, db_name):
+        # Get the specified database
+        return self.client[db_name]
+
+    def get_collection(self, db_name, collection_name):
+        # Get the specified collection from the database
+        db = self.get_db(db_name)
+        return db[collection_name]
+    
 
 class MongoDB:
     def __init__(self,verbose=False):
