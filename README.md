@@ -119,6 +119,8 @@ Data Sources currently Supporting:
 - Perform Intraday time series analysis on the next trading day. The assumption is the stocks which show rapid change in the market sentiments due to the reuslts from the fillings might showcase similar patterns of trading. Check whether there is any significant implications of the Report to volatility of stock price post the report release and also is there any difference based on the market sentiment of the stock.
 
 # My vague ideas
+- GEX
+   - https://tanukitrade.substack.com/p/0120-using-gex-levels-in-action-my?utm_campaign=post&utm_medium=web
 - Shazam like pattern recognition for Price data. Using FFT to convert audio to spectral data and then find peak features. Store them as hash.
 - DTW(Dynamic Time Warping) to find similarity between patterns.
 - Stop Loss Modeling
