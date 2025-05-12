@@ -107,13 +107,27 @@ Data Sources currently Supporting:
    - Form 144 - is a document filed with the SEC by someone who intends to sell restricted or control securities, such as when an affiliate sells shares.  Valid for 90 days, and can help predict future sales. Form 144 must be filed if the investor plans to sell more than 5,000 shares or $50,000 of total stock within a three-month period.
    - Form 4 - Insiders, or those related to insiders, must file Form 4 when they actually sell the restricted stock. Form 4 is filed within two business days of the transaction. 
 
+- https://fenix.tecnico.ulisboa.pt/downloadFile/281870113705822/89549-tiago-barroso-resumo.pdf
 - Perform Intraday time series analysis on the next trading day. The assumption is the stocks which show rapid change in the market sentiments due to the reuslts from the fillings might showcase similar patterns of trading. Check whether there is any significant implications of the Report to volatility of stock price post the report release and also is there any difference based on the market sentiment of the stock.
 
 # My vague ideas
+- Shazam like pattern recognition for Price data. Using FFT to convert audio to spectral data and then find peak features. Store them as hash.
+- DTW(Dynamic Time Warping) to find similarity between patterns.
+- Stop Loss Modeling
+- make QTI indicator
+- ML for predicting probability of a market trend.
+- Modify finagent to be connected to my datasources and azure openai.
+- The GEX-Enhanced Opening Range Options Breakout Strategy
+- https://www.youtube.com/watch?v=LTI9i_Njj3U&ab_channel=Quantopian
+- Rankers (https://www.quantitativo.com/p/learning-to-rank) (https://www.pm-research.com/content/iijjfds/3/2/70.full.pdf)
+- Spline fitting for trend (https://chatgpt.com/c/6816f50a-a860-800c-8e32-0fb18b449f79)
+- Singapore Credit Card data from data.gov.sg to check any alpha present in the data.
+- Gamma Exposure(https://chatgpt.com/c/68172e7c-eedc-800c-b7a1-40f051c8a205)
+- hostorical index constituents
+- OpenFE for feature engineering.
+
 - Mean Reversion for Crypto AI coins and coins with lot of recent trend
-
 - Label financial data in a unique way to only extract trades we want to take. Might wanna think which kind of trade we want to take?
-
 - This is a volatility trading strategy. Buying the straddle when implied vol is subsided, at the hope that it will spike in the near future. At the same time, we delta hedge our portfolio to remove the affect of underlying movement on portfolio.
 
 
