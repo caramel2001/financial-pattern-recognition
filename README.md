@@ -59,6 +59,14 @@ Data Sources currently Supporting:
 - Fyers API : For Indian Market Minute and second interval data Data
 - US Fundamentals data from 2010 to 2020 : https://www.kaggle.com/datasets/finnhub/reported-financials
 - Coinbase for Crypto Price data
+- Options data
+   - https://www.kaggle.com/datasets/kylegraupe/spy-daily-eod-options-quotes-2020-2022/data
+   - https://polygon.io/dashboard/subscriptions
+   - https://www.dolthub.com/repositories/post-no-preference/options/query/master?active=Tables&q=SELECT+*%0AFROM+%60option_chain%60%0AORDER+BY+%60date%60+DESC%2C+%60act_symbol%60+ASC%2C+%60expiration%60+ASC%2C+%60strike%60+ASC%2C+%60call_put%60+ASC%0ALIMIT+1000%3B%0A
+   - https://www.optionsdx.com/checkout/order-received/13033/?key=wc_order_l8BZEUC7qlz9Z
+   - https://http-docs.thetadata.us/Articles/Getting-Started/Subscriptions.html#options-data
+   - https://databento.com/
+
 
 **Data Source Needed**
 - Good free soruce to get US market real time fundamentals. Not sure if Yahoo Finance is reliable, AlphaVantage got Free API but limited API calls
