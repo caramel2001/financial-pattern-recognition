@@ -26,3 +26,4 @@ exp/strategy/rsi_macd_boll.py
 runlog.txt
 jobs
 ibapi.egg-info
+scripts
