@@ -21,10 +21,11 @@ class IBHistoricalDataApp(EWrapper, EClient):
         print(f"HistoricalDataEnd. ReqId: {reqId}, from {start} to {end}")
         self.data_end = True
 
-    def error(self, reqId, errorCode, errorString, advancedOrderRejectJson=""):
-        print(f"Error: {reqId}, {errorCode}, {errorString}")
-        if advancedOrderRejectJson:
-            print(f"Advanced Order Reject JSON: {advancedOrderRejectJson}")
+    def error(self, reqId, errorTime, errorCode, errorString, advancedOrderRejectJson=""):
+        if errorCode not in [2104, 2106, 2158]:
+            print(f"Error. ReqId: {reqId}, Time: {errorTime}, Code: {errorCode}, Msg: {errorString}")
+            if advancedOrderRejectJson:
+                print(f"Advanced Order Reject JSON: {advancedOrderRejectJson}")
 
 
     def start(self):
