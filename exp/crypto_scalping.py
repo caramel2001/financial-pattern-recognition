@@ -33,7 +33,7 @@ def send_telegram_message(message: str):
     payload = {"chat_id": TELEGRAM_CHAT_ID, "text": message}
     requests.post(url, json=payload)
 
-def get_processed_data(symbol, interval, limit=60):
+def get_processed_data(symbol, interval, limit=100):
     df = get_ohlcv(symbol, interval, limit)
     df = df.astype(float)
     df["EMA_slow"]=ta.ema(df.close, length=50)
@@ -96,7 +96,7 @@ def get_signals(df:pd.DataFrame):
     return df
 
 
-async def fetch_ohlcv_async(symbol, interval, limit=60):
+async def fetch_ohlcv_async(symbol, interval, limit=100):
     """Fetch OHLCV data asynchronously."""
     client = Client(api_key=settings['BINANCE_API_KEY'], api_secret=settings['BINANCE_SECRET_KEY'])
     candles = client.futures_klines(symbol=symbol, interval=interval, limit=limit)
@@ -114,7 +114,7 @@ async def fetch_current_price_async(symbol):
     ticker = client.futures_symbol_ticker(symbol=symbol)
     return float(ticker['price'])
 
-def get_ohlcv(symbol, interval, limit=60):
+def get_ohlcv(symbol, interval, limit=100):
     """Wrapper to run async fetch_ohlcv."""
     return asyncio.run(fetch_ohlcv_async(symbol, interval, limit))
 
@@ -128,30 +128,42 @@ def trading_job():
     symbol="WLDUSDT"
     df = get_processed_data(symbol, "5m")
     df = get_signals(df)
-    print(df)
+    df.set_index("date", inplace=True)
+    # Get the current UTC time
+    now = datetime.utcnow()
+    # Calculate the last completed 5-minute candle time
+    # Floor to 5 min, then subtract 1 period to get the completed one
+    last_candle_time = (now - timedelta(minutes=now.minute % 5,
+                                        seconds=now.second,
+                                        microseconds=now.microsecond)) - timedelta(minutes=5)
+    # Select the candle with exact timestamp
+    if last_candle_time in df.index:
+        last_candle = df.loc[last_candle_time]
+    else:
+        logger.error(f"No candle found for {last_candle_time}. Check your data range or refresh data.")
+        return
     slcoef = 1.1
     TPSLRatio = 1.5
-    slatr = slcoef * df.ATR.iloc[-1]
-    signal = df.TotalSignal.iloc[-1]
+    slatr = slcoef * last_candle.ATR
+    signal = last_candle.TotalSignal
     current_price = get_current_price(symbol)  # Get the most recent price
 
     if signal == 2:
         sl1 = current_price - slatr
         tp1 = current_price + slatr * TPSLRatio
-        send_telegram_message(f"Buy signal detected!\nTime: {datetime.now()}\nPrice: {current_price}\nStoploss: {sl1}\nTake Profit: {tp1} \ndataframe last timestamp: {df.date.iloc[-1]}")
+        send_telegram_message(f"Buy signal detected!\nTime: {datetime.now()}\nPrice: {current_price}\nStoploss: {sl1}\nTake Profit: {tp1} \ndataframe last timestamp: {last_candle_time}")
         logger.debug(f"Buy signal detected at {datetime.now()}")
     elif signal == 1:
         sl1 = current_price + slatr
         tp1 = current_price - slatr * TPSLRatio
-        send_telegram_message(f"Sell signal detected!\nTime: {datetime.now()}\nPrice: {current_price}\nStoploss: {sl1}\nTake Profit: {tp1}  \ndataframe last timestamp: {df.date.iloc[-1]}")
+        send_telegram_message(f"Sell signal detected!\nTime: {datetime.now()}\nPrice: {current_price}\nStoploss: {sl1}\nTake Profit: {tp1}  \ndataframe last timestamp: {last_candle_time}")
         logger.debug(f"Sell signal detected at {datetime.now()}")
     else:
-        send_telegram_message(f"No signal detected!\nTime: {datetime.now()}\nPrice: {current_price} \ndataframe last timestamp: {df.date.iloc[-1]}")
+        send_telegram_message(f"No signal detected!\nTime: {datetime.now()}\nPrice: {current_price} \ndataframe last timestamp: {last_candle_time}")
         logger.debug(f"No signal detected at {datetime.now()}")
 
     # write new signal in a csv file
-    print(f'{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}\logs\MLScalping.csv')
-    df.iloc[-1:].to_csv(f'{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}\logs\MLScalping.csv', mode='a', header=False)
+    df.loc[last_candle_time].to_frame().transpose().to_csv(f'{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}\logs\MLScalping.csv', mode='a', header=True)
 # Schedule the job to run every 5 minutes using a cron expression
 # scheduler = BlockingScheduler()
 # scheduler.add_job(
