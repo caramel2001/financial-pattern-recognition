@@ -79,12 +79,12 @@ def get_signals(df:pd.DataFrame):
             return 0
     def total_signal(df, current_candle, backcandles):
         if (ema_signal(current_candle, backcandles)==2
-            and df.close[current_candle]<=df['BBL_15_1.5'][current_candle] and df.MLSignal[current_candle]==True #and df.MLSignalProb[current_candle]>0.55
+            and df.close[current_candle]<=df['BBL_15_1.5'][current_candle] and df.MLSignal[current_candle]==True and df.MLSignalProb[current_candle]>0.55
             #and df.RSI[current_candle]<60
             ):
                 return 2
         if (ema_signal(current_candle, backcandles)==1
-            and df.close[current_candle]>=df['BBU_15_1.5'][current_candle] and df.MLSignal[current_candle]==True #and df.MLSignalProb[current_candle]>0.55
+            and df.close[current_candle]>=df['BBU_15_1.5'][current_candle] and df.MLSignal[current_candle]==True and df.MLSignalProb[current_candle]>0.55
             #and df.RSI[current_candle]>40
             ):
         
@@ -163,7 +163,7 @@ def trading_job():
         logger.debug(f"No signal detected at {datetime.now()}")
 
     # write new signal in a csv file
-    df.loc[last_candle_time].to_frame().transpose().to_csv(f'{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}\logs\MLScalping.csv', mode='a', header=True)
+    df.loc[[last_candle_time]].to_csv(f'{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}\logs\MLScalping.csv', mode='a', header=False)
 # Schedule the job to run every 5 minutes using a cron expression
 # scheduler = BlockingScheduler()
 # scheduler.add_job(
