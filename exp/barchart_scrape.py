@@ -54,6 +54,8 @@ async def main():
     gamma_exposure['datetime'] = curr_time
     expirations['datetime'] = curr_time
     
+    # check mongoDB connection
+    db_client.check_db_connection()
 
     # store expiration implied move data in mongoDB
     db_name = db_client.maps['barchartImpliedMove']['database']

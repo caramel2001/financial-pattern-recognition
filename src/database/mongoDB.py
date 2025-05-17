@@ -4,7 +4,9 @@ from src.utils.config import settings
 from loguru import logger
 import pandas as pd
 from tqdm import tqdm
-
+import socket
+import subprocess
+import time
 
 class LocalMongoDB:
     def __init__(self):
@@ -29,6 +31,44 @@ class LocalMongoDB:
         db = self.get_db(db_name)
         return db[collection_name]
     
+    def is_mongodb_running(self, host='localhost', port=27017):
+        """Check if MongoDB is accepting connections on the specified port."""
+        try:
+            with socket.create_connection((host, port), timeout=2):
+                return True
+        except OSError:
+            return False
+    
+    def start_mongodb_service(self):
+        """Start the MongoDB Windows service."""
+        try:
+            result = subprocess.run(
+                ['powershell', '-Command', 'Start-Service -Name "MongoDB"'],
+                capture_output=True,
+                text=True
+            )
+            if result.returncode == 0:
+                logger.info("MongoDB service started.")
+            else:
+                logger.error("Failed to start MongoDB service:")
+                logger.error(result.stderr)
+        except Exception as e:
+            logger.error(f"Error starting service: {e}")
+    
+    def check_db_connection(self):
+        """Check if MongoDB is running and start it if not."""
+        if self.is_mongodb_running():
+            logger.info("MongoDB is already running.")
+        else:
+            logger.info("MongoDB is not running. Attempting to start service...")
+            self.start_mongodb_service()
+            # Wait and verify again
+            time.sleep(3)
+            if self.is_mongodb_running():
+                logger.info("MongoDB started successfully.")
+            else:
+                logger.error("MongoDB is still not running.")
+        
 
 class MongoDB:
     def __init__(self,verbose=False):
