@@ -266,3 +266,4 @@ if __name__ == '__main__':
     print(analysis['Coefficient'])
     # seasonal.non_parametric_test(period='W',log=False)
     plt.show()
+    # Buy on seasonal trends and perform Dollar Cost Averaging on opposite movement with Fibonacci retracement levels
