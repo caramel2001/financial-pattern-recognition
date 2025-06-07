@@ -87,10 +87,11 @@ def get_processed_data(symbol, interval, limit=100):
     
     # Drop NaNs
     rsis['tar'] = tar
-    rsis.dropna(inplace=True)
+   
     
     target = rsis['tar']
     rsis.drop('tar', axis=1, inplace=True)
+    rsis.dropna(inplace=True)
     return df,rsis,target
 
 def get_params(df:pd.DataFrame,target:pd.Series,rsi_lbs:list = rsi_lbs, lookahead:int = 3,n_components:int=3, parameters_file:str=parameters_file):
@@ -159,19 +160,29 @@ def get_signal(rsis:pd.DataFrame,model_params:dict):
     l_thresh = model_params['l_thresh']
     s_thresh = model_params['s_thresh']
     n_components = model_params['n_components']
-    # curr_row = rsis.iloc[i] - rsi_means
-    # vec = np.array([np.dot(curr_row, evecs[j]) for j in range(n_components)])
-    # curr_pred = np.dot(vec, model_coefs)
     
-    curr_row = rsis.iloc[-1] - rsi_means
+    # Calculate the last completed 1hr candle time
+    # Floor to 1 hr, then subtract 1 period to get the completed one
+    now = datetime.utcnow()
+    last_candle_time = (now - timedelta(minutes=now.minute % 60,
+                                              seconds=now.second,
+                                              microseconds=now.microsecond)) - timedelta(hours=1)
+    # Select candle with exact timestamp
+    logger.debug(f"Last completed candle time: {last_candle_time} UTC")
+    if last_candle_time not in rsis.index:
+        logger.warning(f"No RSI data available for the last completed candle time: {last_candle_time}")
+        return 0,None
+    curr_row = rsis.loc[last_candle_time]
+    curr_row = curr_row - rsi_means
     vec = np.array([np.dot(curr_row, evecs[j]) for j in range(n_components)])
     curr_pred = np.dot(vec, model_coefs)
-    print(f"Current RSI PCA Prediction: {curr_pred}")
+    curr_row['pred'] = curr_pred
+    logger.info(f"Current RSI PCA Prediction: {curr_pred}")
     if curr_pred > l_thresh:
-        return 1 # long
+        return 1,curr_row # long
     elif curr_pred < s_thresh:
-        return -1 # short
-    return 0 # neutral
+        return -1,curr_row # short
+    return 0,curr_row # neutral
 
 def fetch_ohlcv_async(symbol, interval, limit=100,start_date=None, end_date=None):
     """Fetch OHLCV data asynchronously."""
@@ -223,7 +234,7 @@ def main():
     symbol="ETHUSDT"
     df,rsis,target = get_processed_data(symbol, "1h",limit=10000)
     params = get_params(rsis,target)
-    signal = get_signal(rsis, params)
+    signal,curr_row = get_signal(rsis, params)
 
     current_price = get_current_price(symbol)
 
@@ -236,8 +247,21 @@ def main():
         logger.info(message)
         send_telegram_message(message)
     else:
-        message = f"No signal for {symbol} at price {current_price:.2f} at {datetime.now()}"
+        message = f"RSI Scalping : No signal for {symbol} at price {current_price:.2f} at {datetime.now()}"
         logger.info(message)
+        send_telegram_message(message)
+    # Calculate the last completed 1hr candle time
+    # Floor to 1 hr, then subtract 1 period to get the completed one
+    now = datetime.utcnow()
+    last_candle_time = (now - timedelta(minutes=now.minute % 60,
+                                              seconds=now.second,
+                                              microseconds=now.microsecond)) - timedelta(hours=1)
+    row = df.loc[[last_candle_time]]
+    row['pred'] = curr_row['pred']
+    row['signal'] = signal
+    # save signal in csv file
+    row.to_csv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "logs", f"{symbol}_pca_rsi_signal.csv"),mode='a', header=False, index=True)
+
 
 if __name__ == "__main__":
     # Configure logger to write to a file
