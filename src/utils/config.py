@@ -37,4 +37,5 @@ settings = {
     "TELEBOT_KEY": getenv("TELEBOT_KEY"),
     "TELEBOT_CHATID": getenv("TELEBOT_CHATID"),
     "LOCAL_MONGO_URI": getenv("LOCAL_MONGO_URI"),
+    "GEMINI_KEY" : getenv("GEMINI_KEY"),
 }

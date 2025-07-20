@@ -139,8 +139,8 @@ Data Sources currently Supporting:
 - Mean Reversion for Crypto AI coins and coins with lot of recent trend
 - Label financial data in a unique way to only extract trades we want to take. Might wanna think which kind of trade we want to take?
 - This is a volatility trading strategy. Buying the straddle when implied vol is subsided, at the hope that it will spike in the near future. At the same time, we delta hedge our portfolio to remove the affect of underlying movement on portfolio.
-
-
+- https://www.quantitativo.com/p/short-term-basis-reversal
+- https://www.smallake.kr/wp-content/uploads/2017/04/TakeuchiLee-ApplyingDeepLearningToEnhanceMomentumTradingStrategiesInStocks.pdf
 
 ### David Pauls Insipiration
 
@@ -218,3 +218,9 @@ To develop a stock-picking strategy based on Michael Burry's approach outlined i
    - **Reassess Investment Thesis:** Reevaluate positions periodically to ensure they still offer value and have potential for recovery.
 
 By following these steps, you can replicate the fundamental value-investing strategy Michael Burry uses, with a focus on free cash flow, enterprise value, and an industry-agnostic approach.
+
+
+## Aniket Bhaiya Strategy
+
+- Pivotal Lux Algo
+- Hama Line
